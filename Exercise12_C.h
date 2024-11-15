@@ -7,11 +7,18 @@ typedef enum piece_type {
 	King,
 } PieceType;
 
+typedef enum color {
+	White,
+	Black,
+} Color;
+
 typedef struct piece {
-	PieceType type : 3;
-	unsigned int color : 1;
+	PieceType type : 4;
+	Color color : 1;
 } Piece;
 
+// board[rank][file],
+// A file is 0, 1st rank is 0
 typedef struct board {
 	Piece board[8][8];
 } Board;
@@ -22,6 +29,8 @@ typedef struct move {
 	unsigned int destination_rank: 3;
 	unsigned int destination_file: 3;
 } Move;
+
+Board new_board();
 
 #define EXERCISE_12_C (1)
 

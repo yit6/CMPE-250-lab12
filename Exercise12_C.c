@@ -16,11 +16,7 @@
 
 int main (void) {
 		
-	Board b;
-	Piece wp;
-	wp.color = 1;
-	wp.type = Pawn;
-	b.board[0][0] = wp;
+	Board b = new_board();
 
   __asm("CPSID   I");
 	
