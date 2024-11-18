@@ -1,5 +1,6 @@
 typedef enum piece_type {
-	Pawn=0,
+	None=0,
+	Pawn,
 	Knight,
 	Bishop,
 	Rook,

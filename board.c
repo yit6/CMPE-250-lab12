@@ -1,7 +1,7 @@
 #include "Exercise12_C.h"
 
 Board new_board() {
-	Board b;
+	Board b = { 0 };
 	int i;
 	
 	Piece p;
