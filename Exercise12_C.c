@@ -24,5 +24,7 @@ int main (void) {
 	
   __asm("CPSIE   I");
 	
+	print_board(&b);
+	
   for (;;) {  }
 }

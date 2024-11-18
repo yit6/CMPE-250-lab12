@@ -29,9 +29,11 @@ typedef struct move {
 	unsigned int soure_file: 3;
 	unsigned int destination_rank: 3;
 	unsigned int destination_file: 3;
+	PieceType promotion: 3;
 } Move;
 
-Board new_board();
+Board new_board(void);
+void print_board(Board *b);
 
 #define EXERCISE_12_C (1)
 
