@@ -59,10 +59,11 @@ Board new_board(void) {
 void print_board(Board *b) {
 	
 	int rank,file;
-	char divider[] = "|\r\n  +---+---+---+---+---+---+---+---+\r\n7 ";
+	char divider[] = "|\r\n  +---+---+---+---+---+---+---+---+\r\n8 ";
+	char files[] = "    a   b   c   d   e   f   g   h\r\n";
 	
-	PutStringSB("    a   b   c   d   e   f   g   h\r\n",255);
-	PutStringSB("  +---+---+---+---+---+---+---+---+\r\n8 ",255);
+	PutStringSB(files,255);
+	PutStringSB(divider+3,255);
 	
 	for (rank = 7; rank >= 0; rank--) {
 		for (file = 0; file < 8; file++) {
@@ -100,5 +101,5 @@ void print_board(Board *b) {
 		divider[40] = " 1234567"[rank];
 		PutStringSB(divider,255);
 	}
-	PutStringSB("  a   b   c   d   e   f   g   h\r\n",255);
+	PutStringSB(files,255);
 }
