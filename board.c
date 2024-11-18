@@ -100,4 +100,5 @@ void print_board(Board *b) {
 		divider[40] = " 1234567"[rank];
 		PutStringSB(divider,255);
 	}
+	PutStringSB("  a   b   c   d   e   f   g   h\r\n",255);
 }
