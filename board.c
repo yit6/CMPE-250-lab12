@@ -57,6 +57,46 @@ Board new_board(void) {
 	return b;
 }
 
+Board from_fen(char *fen) {
+	Board b;
+	
+	char rank=7, file=0;
+	char c;
+	
+	while ((c = *(fen++)) != ' ') {
+		Piece p;
+		
+		if (c == '/') {
+			rank--;
+			file=0;
+			continue;
+		}
+		
+		if ('1' <= c && c <= '8') {
+			p.type = None;
+			while (c-- != '0') {
+				b.board[rank][file++] = p;
+			}
+			continue;
+		}
+		
+		p.color = (c&(1<<5)) ? Black : White;
+		
+		c |= 1<<5;
+		
+		if (c == 'p') { p.type = Pawn; }
+		if (c == 'n') { p.type = Knight; }
+		if (c == 'b') { p.type = Bishop; }
+		if (c == 'r') { p.type = Rook; }
+		if (c == 'q') { p.type = Queen; }
+		if (c == 'k') { p.type = King; }
+		
+		b.board[rank][file++] = p;
+	}
+	
+	return b;
+}
+
 void print_board(Board *b) {
 	
 	int rank,file;
