@@ -199,10 +199,10 @@ char is_pseudolegal(Board *b, Move *m) {
 		case Pawn:
 			if (dx == 0) {
 				if (target.type != None) { return 0; }
-				return m->destination_rank-m->destination_file == (piece.color==White)?1:-1;
+				return m->destination_rank-m->soure_rank == ((piece.color==White)?1:-1);
 			} else if (dx == 1) {
 				if (target.type == None || target.color == piece.color) { return 0; }
-				return m->destination_rank-m->destination_file == (piece.color==White)?1:-1;
+				return m->destination_rank-m->soure_rank == ((piece.color==White)?1:-1);
 			} else {
 				return 0;
 			}
@@ -231,7 +231,7 @@ char is_pseudolegal(Board *b, Move *m) {
 	return 1;
 }
 
-//checks if a move puts either king into check, returns 0 for no check, 1 for black check, 2 for white check, 3 for both
+//checks if a move puts either king into check, returns 0 for no check, 1 for white check, 2 for black check, 3 for both
 char is_check(Board *b) {
 	int i;
 	int j;
@@ -265,19 +265,21 @@ char is_check(Board *b) {
 	for(i = 0; i < 8; i++) {
 		for(j = 0; j < 8; j++) {
 			Piece p = b->board[i][j];
-			if(p.color == Black && (checkState & 2) == 0) {
+			if(p.color == Black && (checkState & 1) == 0) {
 				Move potential;
 				potential.soure_rank = i;
 				potential.soure_file = j;
 				potential.destination_rank = white_rank;
 				potential.destination_file = white_file;
 				potential.promotion = None;
-				//PutStringSB("king pow penis\r\n", 255);
 				if(is_pseudolegal(b, &potential)) {
-					checkState |= 2;
+					checkState |= 1;
+					PutStringSB("you make me sick ", 255);
+					PutNumHex(i);
+					PutNumHex(j);
 				}
 			}
-			if(p.color == White && (checkState & 1) == 0) {
+			if(p.color == White && (checkState & 2) == 0) {
 				Move potential;
 				potential.soure_rank = i;
 				potential.soure_file = j;
@@ -285,7 +287,7 @@ char is_check(Board *b) {
 				potential.destination_file = black_file;
 				potential.promotion = None;
 				if(is_pseudolegal(b, &potential)) {
-					checkState |= 1;
+					checkState |= 2;
 				}
 			}
 		}
@@ -298,7 +300,7 @@ char is_legal(Board *b, Move *m) {
 	Piece p = b->board[m->soure_rank][m->soure_file];
 	
 	char check;
-	char checkMask = p.color << 1;
+	char checkMask = 1 << p.color;
 	char psuedo = is_pseudolegal(b, m);
 	if(!psuedo) {
 		return 0;
