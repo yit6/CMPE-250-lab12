@@ -10,10 +10,10 @@ Move parse_move(char *uci) {
 	m.destination_rank = uci[3]-'1';
 	
 	m.promotion = None;
-	if (uci[0] == 'n') { m.promotion = Knight; }
-	if (uci[0] == 'b') { m.promotion = Bishop; }
-	if (uci[0] == 'r') { m.promotion = Rook;   }
-	if (uci[0] == 'q') { m.promotion = Queen;  }
+	if (uci[4] == 'n') { m.promotion = Knight; }
+	if (uci[4] == 'b') { m.promotion = Bishop; }
+	if (uci[4] == 'r') { m.promotion = Rook;   }
+	if (uci[4] == 'q') { m.promotion = Queen;  }
 	
 	return m;
 }

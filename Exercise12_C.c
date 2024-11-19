@@ -32,25 +32,7 @@ int main (void) {
 	//b = from_fen("rnbqkbnr/8/8/1p6/pPp1p1p1/P1PpPpPp/RKRP1P1P/QBBN1N2 w q - 0 27");
 	
 	print_board(&b);
-	
-	inCheck = is_check(&b);
-	
-	switch(inCheck) {
-		case 0:
-			PutStringSB("No check\r\n", 255);
-			break;
-		case 1:
-			PutStringSB("Check on black\r\n", 255);
-			break;
-		case 2:
-			PutStringSB("Check on white\r\n", 255);
-			break;
-		case 3:
-			PutStringSB("Check on both\r\n", 255);
-			break;
-		default:
-			break;
-	}
+
 	
   for (;;) {
 		GetStringSB(move_buffer, 10);
@@ -63,12 +45,16 @@ int main (void) {
 		} else {
 			PutStringSB("Bad!\r\n",255);
 		}
+		
 		if (is_legal(&b, &m)) {
 			PutStringSB("Legal!\r\n",255);
 		} else {
 			PutStringSB("Not Legal!\r\n",255);
 		}
-		//make_move(&b, &m);
+		
+		make_move(&b, &m);
+		print_board(&b);
+		make_unmove(&b);
 		print_board(&b);
 	}
 }
