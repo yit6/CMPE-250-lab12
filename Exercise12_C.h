@@ -18,11 +18,12 @@ typedef struct piece {
 	Color color : 1;
 } Piece;
 
-// board[rank][file],
-// A file is 0, 1st rank is 0
-typedef struct board {
-	Piece board[8][8];
-} Board;
+typedef struct castling_rights {
+	int white_kingside: 1;
+	int white_queenside: 1;
+	int black_kingside: 1;
+	int black_queenside: 1;
+} CastlingRights;
 
 typedef struct move {
 	unsigned int soure_rank: 3;
@@ -32,12 +33,31 @@ typedef struct move {
 	PieceType promotion: 3;
 } Move;
 
+struct game_history {
+	struct game_history *prev;
+	CastlingRights castling_rights;
+	Piece captured;
+	Move move;
+};
+
+// board[rank][file],
+// A file is 0, 1st rank is 0
+typedef struct board {
+	Piece board[8][8];
+	CastlingRights castling_rights;
+	
+	int ply;
+	
+} Board;
+
 Board new_board(void);
 Board from_fen(char *fen);
 void print_board(Board *b);
 char is_pseudolegal(Board *b, Move *m);
 char is_check(Board *b);
 char is_legal(Board *b, Move *m);
+void make_move(Board *b, Move *m);
+void make_unmove(Board *b);
 
 Move parse_move(char *uci);
 void print_move(Move *m);
