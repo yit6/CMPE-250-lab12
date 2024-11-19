@@ -166,17 +166,22 @@ char is_pseudolegal(Board *b, Move *m) {
 	} else {
 		
 		// Pawns must promote when the reach the end
-		if (m->destination_rank == piece.color==White ? 7 : 0) { return 0; }
+		if (piece.type == Pawn && m->destination_rank == piece.color==White ? 7 : 0) { return 0; }
 	}
 	
 	// Castling goes here
 	
 	// Can't attack own piece
-	if (piece.color == target.color) { return 0; }
+	if (target.type != None && piece.color == target.color) { return 0; }
 	
-	dx = abs(m->destination_file-m->soure_file);
-	dy = abs(m->destination_rank-m->soure_rank);
+	dx = m->destination_file-m->soure_file;
+	dy = m->destination_rank-m->soure_rank;
+		
+	sx = (dx > 0) - (dx < 0);
+	sy = (dy > 0) - (dy < 0);
 	
+	dx = abs(dx);
+	dy = abs(dy);
 	
 	// Check piece movement, return false if invalid
 	// and true for valid moves for non-sliding pieces
@@ -202,10 +207,7 @@ char is_pseudolegal(Board *b, Move *m) {
 	
 	// Check sliding pieces
 	
-	sx = (dx > 0) - (dx < 0);
-	sy = (dy > 0) - (dy < 0);
-	
-	for (x = m->soure_file+sx, y = m->soure_rank+sy; x == m->destination_file && y == m->destination_rank; x+=sx,y+=sy) {
+	for (x = m->soure_file+sx, y = m->soure_rank+sy; x != m->destination_file || y != m->destination_rank; x+=sx,y+=sy) {
 		if (b->board[y][x].type != None) { return 0; }
 	}
 	
