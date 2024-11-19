@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "Exercise12_C.h"
 
 Board new_board(void) {
@@ -85,4 +86,76 @@ void print_board(Board *b) {
 		PutStringSB(divider,255);
 	}
 	PutStringSB(files+2,255);
+}
+
+char is_pseudolegal(Board *b, Move *m) {
+	signed char x, y, dx, dy, sx, sy;
+	
+	Piece piece = b->board[m->soure_rank][m->soure_file];
+	Piece target = b->board[m->destination_rank][m->destination_file];
+	
+	// Can't move nothing
+	if (piece.type == None) { return 0; }
+	
+	// Piece has to move
+	if (m->soure_file == m->destination_file && m->soure_rank == m->destination_rank) { return 0; }
+	
+	// Check promotion
+	if (m->promotion != None) {
+		
+		// Make sure promotion type is allowed
+		if (m->promotion == None) { return 0; }
+		if (m->promotion == Pawn) { return 0; }
+		if (m->promotion == King) { return 0; }
+		
+		// Only pawns can be promoted
+		if (piece.type != Pawn) { return 0; }
+		
+		// Pawns can only promote when they reach the end
+		if (m->destination_rank != piece.color==White ? 7 : 0) { return 0; }
+	} else {
+		
+		// Pawns must promote when the reach the end
+		if (m->destination_rank == piece.color==White ? 7 : 0) { return 0; }
+	}
+	
+	// Castling goes here
+	
+	// Can't attack own piece
+	if (piece.color == target.color) { return 0; }
+	
+	dx = abs(m->destination_file-m->soure_file);
+	dy = abs(m->destination_rank-m->soure_rank);
+	
+	
+	// Check piece movement, return false if invalid
+	// and true for valid moves for non-sliding pieces
+	switch (piece.type) {
+		case None:
+			return 0;
+		case Pawn:
+			return 0;
+		case Knight:
+			return dx*dx + dy*dy == 5;
+		case Bishop:
+			if (dx != dy && dx != -dy) { return 0; }
+		case Rook:
+			if (dx != 0 && dy != 0) { return 0; }
+		case Queen:
+			if (dx != 0 && dy != 0 && dx != dy && dx != -dy) { return 0; }
+		case King:
+			return dx < 2 && dy < 2;
+	}
+	
+	// Check sliding pieces
+	
+	sx = (dx > 0) - (dx < 0);
+	sy = (dy > 0) - (dy < 0);
+	
+	for (x = m->soure_file+sx, y = m->soure_rank+sy; x == m->destination_file && y == m->destination_rank; x+=sx,y+=sy) {
+		if (b->board[y][x].type != None) { return 0; }
+	}
+	
+	// Already guarranteed to be attacking valid square, so no further checks needed
+	return 1;
 }
