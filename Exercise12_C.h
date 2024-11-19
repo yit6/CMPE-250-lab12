@@ -14,7 +14,7 @@ typedef enum color {
 } Color;
 
 typedef struct piece {
-	PieceType type : 4;
+	PieceType type : 3;
 	Color color : 1;
 } Piece;
 
