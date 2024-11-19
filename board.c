@@ -280,3 +280,22 @@ char is_check(Board *b) {
 	}
 	return checkState;
 }
+
+// 0 for illegal, 1 for legal
+char is_legal(Board *b, Move *m) {
+	Piece p = b->board[m->soure_rank][m->soure_file];
+	
+	char check;
+	char checkMask = p.color << 1;
+	char psuedo = is_pseudolegal(b, m);
+	if(!psuedo) {
+		return 0;
+	}
+	
+	make_move(b, m);
+	check = is_check(b) & checkMask;
+	make_unmove(b);
+	
+	return check == 0;
+	
+}
