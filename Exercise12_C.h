@@ -9,8 +9,8 @@ typedef enum piece_type {
 } PieceType;
 
 typedef enum color {
-	White,
-	Black,
+	White=0,
+	Black=1,
 } Color;
 
 typedef struct piece {
@@ -36,7 +36,7 @@ Board new_board(void);
 Board from_fen(char *fen);
 void print_board(Board *b);
 char is_pseudolegal(Board *b, Move *m);
-char is_check(Board *b, Move *m);
+char is_check(Board *b);
 
 Move parse_move(char *uci);
 void print_move(Move *m);

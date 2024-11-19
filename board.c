@@ -215,110 +215,60 @@ char is_pseudolegal(Board *b, Move *m) {
 	return 1;
 }
 
-//checks if a move puts either king into check, returns 0 for no check, 1 for black check, 2 for white check
-//does not check if move was legal
-char is_check(Board *b, Move *m) {
-	int i = 0;
-	int j = 0;
-	int k = 0;
+//checks if a move puts either king into check, returns 0 for no check, 1 for black check, 2 for white check, 3 for both
+char is_check(Board *b) {
+	int i;
+	int j;
+	int k;
 	
-	int rank = m->destination_rank;
-	int file = m->destination_file;
-	Piece mover = b->board[m->soure_rank][m->soure_file];
+	int white_rank = -1;
+	int white_file = -1;
+	int black_rank = -1;
+	int black_file = -1;
 	
-	int offset = mover.color == White ? 1 : -1;
-	if(m->promotion != 0) {
-		mover.type = m->promotion;
+	int checkState = 0;
+	
+	//scan for kings
+	
+	for(i = 0; i < 8; i++) {
+		for(j = 0; j < 8; j++) {
+			if(b->board[i][j].type == King) {
+				if(b->board[i][j].color == White) {
+					white_rank = i;
+					white_file = j;
+				} else {
+					black_rank = i;
+					black_file = j;
+				}
+			}
+		}
 	}
-	switch(mover.type) {
-		case None:
-			return 0; //can't exactly put something into check with nothing
-		case Pawn:
-			if((b->board[rank + offset][file + 1].type == King && b->board[rank + offset][file + 1].color != mover.color) ||
-						(b->board[rank + offset][file - 1].type == King && b->board[rank + offset][file - 1].color != mover.color)) {
-				return 2 - mover.color;
-			}
-			break;
-		case Knight: //how tf do i do this clean
-			for(i = m->destination_rank - 2; i < m->destination_rank + 2; i++) {
-				for(j = m->destination_file - 2; j < m->destination_file + 2; j++) {
-					int dx = i - m->destination_rank;
-					int dy = j - m->destination_file;
-					Piece p = b->board[i][j];
-					if(dx * dx + dy * dy == 5 && p.type == King && p.color != mover.color) { //checking opposing king
-						return 1 + p.color;
-					}
+
+	// check if each piece can move to king
+	
+	for(i = 0; i < 8; i++) {
+		for(j = 0; j < 8; j++) {
+			if(i != white_rank && j != white_file && (checkState & 2) == 0) {
+				Move potential;
+				potential.soure_rank = i;
+				potential.soure_file = j;
+				potential.destination_rank = white_rank;
+				potential.destination_file = white_file;
+				if(is_pseudolegal(b, &potential)) {
+					checkState |= 2;
 				}
 			}
-			return 0;
-		case Bishop:
-			for(i = -1; i <= 1; i += 2) {
-				for(j = -1; j <= 1; j += 2) {
-					for(k = 0; k < 8; k++) { //who doesn't love a triple for
-						Piece p;
-						if(rank + i * k < 0 || rank + i * k >= 8 ||
-									file + j * k < 0 || file + j * k >= 8) {
-							break;
-						}
-						p = b->board[rank + i * k][file + j * k];
-						if(p.type != None) {
-							if(p.type == King && p.color != mover.color) { // hit opposing king
-								return 1 + p.color;
-							} else { // (ray?)cast has hit a non king piece
-								break;
-							}
-						}
-					}
+			if(i != black_rank && j != black_file && (checkState & 1) == 0) {
+				Move potential;
+				potential.soure_rank = i;
+				potential.soure_file = j;
+				potential.destination_rank = black_rank;
+				potential.destination_file = black_file;
+				if(is_pseudolegal(b, &potential)) {
+					checkState |= 1;
 				}
 			}
-			return 0;
-		case Rook: //change this so it isnt a bishop
-			for(i = 1; i < 8; i += 2) {
-				int dx = i % 3 - 1;
-				int dy = i / 3 - 1;
-				for(k = 0; k < 8; k++) {
-					Piece p;
-					if(rank + dx * k < 0 || rank + dx * k >= 8 ||
-								file + dy * k < 0 || file + dy * k >= 8) {
-						break;
-					}
-					p = b->board[rank + dx * k][file + dy * k];
-					if(p.type != None) {
-						if(p.type == King && p.color != mover.color) { // hit opposing king
-							return 1 + p.color;
-						} else { // (ray?)cast has hit a non king piece
-							break;
-						}
-					}
-				}
-			}
-			return 0;
-		case Queen:
-			for(i = -1; i <= 1; i++) {
-				for(j = -1; j <= 1; j++) {
-					if(i*i + j*j == 0) { //wow only one branch operation! wahoo! (this was unnecessary)
-						continue;
-					}
-					for(k = 0; k < 8; k++) { //who doesn't love a triple for
-						Piece p;
-						if(rank + i * k < 0 || rank + i * k >= 8 ||
-									file + j * k < 0 || file + j * k >= 8) {
-							break;
-						}
-						p = b->board[rank + i * k][file + j * k];
-						if(p.type != None) {
-							if(p.type == King && p.color != mover.color) { // hit opposing king
-								return 1 + p.color;
-							} else { // (ray?)cast has hit a non king piece
-								break;
-							}
-						}
-					}
-				}
-			}
-			return 0;
-		case King: //we figuring this shit out in diffeq fr
-			break;
+		}
 	}
-	return 0;
+	return checkState;
 }
