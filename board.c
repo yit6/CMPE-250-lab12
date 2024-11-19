@@ -353,36 +353,56 @@ void for_each_pseudolegal(Board *b, void f(int i, Move m)) {
 	int sf,sr,df,dr,i=0;
 	Move m;
 	
+	// try to move every piece
 	for (sf = 0; sf < 8; sf++) {
 		for (sr = 0; sr < 8; sr++) {
+			
+			// don't move nothing
 			if (b->board[sr][sf].type == None) { continue; }
 			
+			// don't move opponent piece
+			if (b->board[sr][sf].color != b->current_turn) { continue; }
+			
+			m.soure_file = sf;
+			m.soure_rank = sr;
+			
+			// Special logic for pawns
 			if (b->board[sr][sf].type == Pawn) {
+				
+				// Pawns can only move one rank
+				// TODO: this is false
 				dr = sr + (b->current_turn==White?1:-1);
+				
+				// Pawns can move at most one file from where they start
 				for (df = sf-1; df <= sf+1; df++) {
+					
+					m.destination_file = df;
+					m.destination_rank = dr;
+					
+					// Pawns must promote when they reach the end
 					if (dr == (b->current_turn==White)?7:0) {
 						for (m.promotion = Knight; m.promotion <= Queen; m.promotion++) {
-							m.destination_file = df;
-							m.destination_rank = dr;
 							if (is_pseudolegal(b, &m)) { f(i++,m); }
 						}
 					} else {
-						m.promotion = None;
-						m.destination_file = df;
-						m.destination_rank = dr;
-						
+						m.promotion = None;						
 						if (is_pseudolegal(b, &m)) { f(i++,m); }
 					}
+					
 				}
-			}
+			} else {
 			
-			m.promotion = None;
+				// Pieces don't promote
+				m.promotion = None;
 			
-			for (dr = 0; dr < 8; dr++) {
-				for (df = 0; df < 8; df++) {
-					m.destination_file = df;
-					m.destination_rank = dr;
-					if (is_pseudolegal(b, &m)) { f(i++,m); }
+				// Try every square
+				// TODO: don't
+				for (dr = 0; dr < 8; dr++) {
+					for (df = 0; df < 8; df++) {
+						m.destination_file = df;
+						m.destination_rank = dr;
+						if (is_pseudolegal(b, &m)) { f(i++,m); }
+					}
 				}
 			}
 		}

@@ -39,6 +39,7 @@ int main (void) {
 
   for (;;) {	
 		print_board(&b);
+		for_each_pseudolegal(&b, print_moves);
 		
 		get_input:
 		GetStringSB(move_buffer, 10);
@@ -61,6 +62,5 @@ int main (void) {
 		}
 		
 		make_move(&b, &m);
-		for_each_pseudolegal(&b, print_moves);
 	}
 }
