@@ -135,6 +135,11 @@ void print_board(Board *b) {
 	}
 	PutStringSB(files+2,255);
 	
+	if (b->castling_rights.white_kingside)  { PutChar('K'); }
+	if (b->castling_rights.white_queenside) { PutChar('Q'); }
+	if (b->castling_rights.black_kingside)  { PutChar('k'); }
+	if (b->castling_rights.black_queenside) { PutChar('q'); }	
+	
 	PutStringSB(b->current_turn==White?"White":"Black",255);
 	PutStringSB(" to move\r\n",255);
 }
@@ -228,6 +233,23 @@ char is_pseudolegal(Board *b, Move *m) {
 			if (dx != 0 && dy != 0 && dx != dy && dx != -dy) { return 0; }
 			break;
 		case King:
+			
+			//	Castling
+			if (m->soure_file==4 && (m->destination_file==2 || m->destination_file==6)) {
+				
+				// Make sure source and destination rank are correct
+				if (m->destination_rank != m->soure_rank || m->destination_rank != (b->current_turn==White?0:7)) { return 0; }
+				
+				// Make sure the rights are still there
+				if (m->destination_file == 6 && b->current_turn == White && !b->castling_rights.white_kingside)  { return 0; }
+				if (m->destination_file == 2 && b->current_turn == White && !b->castling_rights.white_queenside) { return 0; }
+				if (m->destination_file == 6 && b->current_turn == Black && !b->castling_rights.black_kingside)  { return 0; }
+				if (m->destination_file == 2 && b->current_turn == Black && !b->castling_rights.black_queenside) { return 0; }
+				
+				// Further checks go in is_legal()
+				return b->board[m->destination_rank][(m->soure_file+m->destination_file)/2].type == None;
+			}
+			
 			return dx < 2 && dy < 2;
 	}
 	
@@ -330,6 +352,34 @@ void make_move(Board *b, Move *m) {
 	hist.move = *m;
 	
 	b->hist[b->ply++] = hist;
+		// Castling
+	
+	if (b->board[m->soure_rank][m->soure_file].type == King && m->soure_file == 4 && (m->destination_file == 2 || m->destination_file == 6)) {
+		if (m->destination_file == 6 && m->destination_rank == 0) {
+			b->castling_rights.white_kingside  = 0;
+			b->board[0][7].type = None;
+			b->board[0][5].type = Rook;
+			b->board[0][5].color = White;
+		}
+		if (m->destination_file == 2 && m->destination_rank == 0) {
+			b->castling_rights.white_queenside = 0;
+			b->board[0][0].type = None;
+			b->board[0][3].type = Rook;
+			b->board[0][3].color = White;
+		}
+		if (m->destination_file == 6 && m->destination_rank == 7) {
+			b->castling_rights.black_kingside  = 0;
+			b->board[7][7].type = None;
+			b->board[7][5].type = Rook;
+			b->board[7][5].color = Black;
+		}
+		if (m->destination_file == 2 && m->destination_rank == 7) {
+			b->castling_rights.black_queenside = 0;
+			b->board[7][0].type = None;
+			b->board[7][3].type = Rook;
+			b->board[7][3].color = Black;
+		}
+	}
 	
 	b->board[m->destination_rank][m->destination_file] = b->board[m->soure_rank][m->soure_file];
 	b->board[m->soure_rank][m->soure_file].type = None;
@@ -345,9 +395,34 @@ void make_unmove(Board *b) {
 	
 	hist = b->hist[--(b->ply)];
 	m = hist.move;
+	b->castling_rights = hist.castling_rights;
 	
 	b->board[m.soure_rank][m.soure_file] = b->board[m.destination_rank][m.destination_file];
 	b->board[m.destination_rank][m.destination_file] = hist.captured;
+	
+	// Castling
+	if (b->board[m.soure_rank][m.soure_file].type == King && m.soure_file == 4 && (m.destination_file == 2 || m.destination_file == 6)) {
+		if (m.destination_file == 6 && m.destination_rank == 0) {
+			b->board[0][7].type = Rook;
+			b->board[0][5].type = None;
+			b->board[0][7].color = White;
+		}
+		if (m.destination_file == 2 && m.destination_rank == 0) {
+			b->board[0][0].type = Rook;
+			b->board[0][3].type = None;
+			b->board[0][0].color = White;
+		}
+		if (m.destination_file == 6 && m.destination_rank == 7) {
+			b->board[7][7].type = Rook;
+			b->board[7][5].type = None;
+			b->board[7][7].color = Black;
+		}
+		if (m.destination_file == 2 && m.destination_rank == 7) {
+			b->board[7][0].type = Rook;
+			b->board[7][3].type = None;
+			b->board[7][0].color = Black;
+		}
+	}
 }
 
 void for_each_pseudolegal(Board *b, void f(int i, Move m)) {
