@@ -15,14 +15,17 @@
 #include <stdlib.h>
 
 int main (void) {
-		
-	Board b = new_board();
-
+	
+	Board b;
+	
   __asm("CPSID   I");
 	
   Init_UART0_IRQ();
 	
   __asm("CPSIE   I");
+	
+	b = from_fen("r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R b KQkq -");
+	//b = from_fen("rnbqkbnr/8/8/1p6/pPp1p1p1/P1PpPpPp/RKRP1P1P/QBBN1N2 w q - 0 27");
 	
 	print_board(&b);
 	

@@ -33,6 +33,7 @@ typedef struct move {
 } Move;
 
 Board new_board(void);
+Board from_fen(char *fen);
 void print_board(Board *b);
 char is_pseudolegal(Board *b, Move *m);
 
