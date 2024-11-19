@@ -34,7 +34,6 @@ typedef struct move {
 } Move;
 
 struct game_history {
-	struct game_history *prev;
 	CastlingRights castling_rights;
 	Piece captured;
 	Move move;
@@ -47,6 +46,7 @@ typedef struct board {
 	CastlingRights castling_rights;
 	
 	int ply;
+	struct game_history hist[6000];
 	
 } Board;
 
