@@ -421,3 +421,16 @@ void for_each_legal(Board *b, void f(int i, Move m)) {
 	
 	for_each_pseudolegal(b, _fe_helper);
 }
+
+Move _random_move;
+
+void _random_move_helper(int i, Move m) {
+	if (rand()%(i+1) == 0) {
+		_random_move = m;
+	}
+}
+
+Move random_move(Board *b) {
+	for_each_legal(b, _random_move_helper);
+	return _random_move;
+}

@@ -47,7 +47,12 @@ int main (void) {
 		
 		if (*move_buffer == 'u') {
 			make_unmove(&b);
-			goto get_input;
+			continue;
+		}
+		if (*move_buffer == 'r') {
+			m = random_move(&b);
+			make_move(&b, &m);
+			continue;
 		}
 		
 		print_move(&m);
