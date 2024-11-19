@@ -334,4 +334,5 @@ void make_unmove(Board *b) {
 	m = hist.move;
 	
 	b->board[m.soure_rank][m.soure_file] = b->board[m.destination_rank][m.destination_file];
+	b->board[m.destination_rank][m.destination_file] = hist.captured;
 }
