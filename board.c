@@ -189,10 +189,13 @@ char is_pseudolegal(Board *b, Move *m) {
 			return dx*dx + dy*dy == 5;
 		case Bishop:
 			if (dx != dy && dx != -dy) { return 0; }
+			break;
 		case Rook:
 			if (dx != 0 && dy != 0) { return 0; }
+			break;
 		case Queen:
 			if (dx != 0 && dy != 0 && dx != dy && dx != -dy) { return 0; }
+			break;
 		case King:
 			return dx < 2 && dy < 2;
 	}
@@ -211,6 +214,7 @@ char is_pseudolegal(Board *b, Move *m) {
 }
 
 //checks if a move puts either king into check, returns 0 for no check, 1 for black check, 2 for white check
+//does not check if move was legal
 char is_check(Board *b, Move *m) {
 	int i = 0;
 	int j = 0;
@@ -219,6 +223,7 @@ char is_check(Board *b, Move *m) {
 		case None:
 			return 0; //can't exactly put something into check with nothing
 		case Pawn:
+			
 			break;
 		case Knight:
 			break;
