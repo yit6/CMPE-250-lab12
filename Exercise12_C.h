@@ -46,12 +46,12 @@ typedef struct board {
 	CastlingRights castling_rights;
 	
 	int ply;
-	struct game_history hist[6000];
+	struct game_history hist[255];
 	
 } Board;
 
-Board new_board(void);
-Board from_fen(char *fen);
+void new_board(Board *b);
+void from_fen(Board *b, char *fen);
 void print_board(Board *b);
 char is_pseudolegal(Board *b, Move *m);
 char is_check(Board *b);

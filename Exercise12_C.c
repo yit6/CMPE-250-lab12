@@ -14,9 +14,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+Board b;
+
 int main (void) {
 	
-	Board b;
 	Move m;
 	char move_buffer[10];
 	char inCheck;
@@ -27,7 +28,7 @@ int main (void) {
 	
   __asm("CPSIE   I");
 	
-	b = from_fen("rnb1kbnr/pppp3Q/1pp5/1pp5/2P1q3/2P5/PPP2PPP/RNB1KBNR w KQkq - 0 1");
+	from_fen(&b,"rnb1kbnr/pppp3Q/1pp5/1pp5/2P1q3/2P5/PPP2PPP/RNB1KBNR w KQkq - 0 1");
 	//b = from_fen("rnbqkbnr/8/8/1p6/pPp1p1p1/P1PpPpPp/RKRP1P1P/QBBN1N2 w q - 0 27");
 	
 	print_board(&b);
@@ -61,5 +62,9 @@ int main (void) {
 		} else {
 			PutStringSB("Bad!\r\n",255);
 		}
+		make_move(&b,&m);
+		print_board(&b);
+		make_unmove(&b);
+		print_board(&b);
 	}
 }

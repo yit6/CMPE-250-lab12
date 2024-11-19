@@ -1,8 +1,7 @@
 #include <stdlib.h>
 #include "Exercise12_C.h"
 
-Board new_board(void) {
-	Board b;
+void new_board(Board *b) {
 	int i;
 	
 	Piece p;
@@ -10,62 +9,59 @@ Board new_board(void) {
 	p.type = Pawn;
 	
 	// White pawns
-	for (i = 0; i < 8; b.board[1][i++] = p);
+	for (i = 0; i < 8; b->board[1][i++] = p);
 	
 	p.type = Knight;
-	b.board[0][1] = p;
-	b.board[0][6] = p;
+	b->board[0][1] = p;
+	b->board[0][6] = p;
 	
 	p.type = Bishop;
-	b.board[0][2] = p;
-	b.board[0][5] = p;
+	b->board[0][2] = p;
+	b->board[0][5] = p;
 	
 	p.type = Rook;
-	b.board[0][0] = p;
-	b.board[0][7] = p;
+	b->board[0][0] = p;
+	b->board[0][7] = p;
 	
 	p.type = Queen;
-	b.board[0][3] = p;
+	b->board[0][3] = p;
 	
 	p.type = King;
-	b.board[0][4] = p;
+	b->board[0][4] = p;
 	
 	p.color = Black;
 	p.type = Pawn;
 	
 	// Black pawns
-	for (i = 0; i < 8; b.board[6][i++] = p);
+	for (i = 0; i < 8; b->board[6][i++] = p);
 	
 	p.type = Knight;
-	b.board[7][1] = p;
-	b.board[7][6] = p;
+	b->board[7][1] = p;
+	b->board[7][6] = p;
 	
 	p.type = Bishop;
-	b.board[7][2] = p;
-	b.board[7][5] = p;
+	b->board[7][2] = p;
+	b->board[7][5] = p;
 	
 	p.type = Rook;
-	b.board[7][0] = p;
-	b.board[7][7] = p;
+	b->board[7][0] = p;
+	b->board[7][7] = p;
 	
 	p.type = Queen;
-	b.board[7][3] = p;
+	b->board[7][3] = p;
 	
 	p.type = King;
-	b.board[7][4] = p;
+	b->board[7][4] = p;
 	
-	b.castling_rights.white_kingside = 1;
-	b.castling_rights.white_queenside = 1;
-	b.castling_rights.black_kingside = 1;
-	b.castling_rights.black_queenside = 1;
+	b->castling_rights.white_kingside = 1;
+	b->castling_rights.white_queenside = 1;
+	b->castling_rights.black_kingside = 1;
+	b->castling_rights.black_queenside = 1;
 	
-	b.ply = 0;
-	
-	return b;
+	b->ply = 0;
 }
 
-Board from_fen(char *fen) {
-	Board b;
+void from_fen(Board *b, char *fen) {
 	
 	char rank=7, file=0;
 	char c;
@@ -82,7 +78,7 @@ Board from_fen(char *fen) {
 		if ('1' <= c && c <= '8') {
 			p.type = None;
 			while (c-- != '0') {
-				b.board[rank][file++] = p;
+				b->board[rank][file++] = p;
 			}
 			continue;
 		}
@@ -98,17 +94,15 @@ Board from_fen(char *fen) {
 		if (c == 'q') { p.type = Queen; }
 		if (c == 'k') { p.type = King; }
 		
-		b.board[rank][file++] = p;
+		b->board[rank][file++] = p;
 	}
 	
-	b.castling_rights.white_kingside = 1;
-	b.castling_rights.white_queenside = 1;
-	b.castling_rights.black_kingside = 1;
-	b.castling_rights.black_queenside = 1;
+	b->castling_rights.white_kingside = 1;
+	b->castling_rights.white_queenside = 1;
+	b->castling_rights.black_kingside = 1;
+	b->castling_rights.black_queenside = 1;
 	
-	b.ply = 0;
-	
-	return b;
+	b->ply = 0;
 }
 
 void print_board(Board *b) {
