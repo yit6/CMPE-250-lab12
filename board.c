@@ -335,9 +335,9 @@ void make_unmove(Board *b) {
 	struct game_history hist;
 	Move m;
 	
-	b->current_turn ^= 1;
-	
 	if (b->ply == 0) { return; }
+	
+	b->current_turn ^= 1;
 	
 	hist = b->hist[--(b->ply)];
 	m = hist.move;
