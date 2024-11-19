@@ -88,6 +88,16 @@ void print_board(Board *b) {
 	PutStringSB(files+2,255);
 }
 
+/***
+*
+* This function checks if a move is psuedolegal, meaning that the piece movement is legal, but does not check
+* if the move violates the king being in check.
+*
+* Param b: Board object
+* Param m: Move object
+*
+* Returns: Code representing psuedolegality of move, 0 for illegal, 1 for psuedolegal
+*/
 char is_pseudolegal(Board *b, Move *m) {
 	signed char x, y, dx, dy, sx, sy;
 	
@@ -158,4 +168,28 @@ char is_pseudolegal(Board *b, Move *m) {
 	
 	// Already guarranteed to be attacking valid square, so no further checks needed
 	return 1;
+}
+
+//checks if a move puts either king into check, returns 0 for no check, 1 for black check, 2 for white check
+char is_check(Board *b, Move *m) {
+	int i = 0;
+	int j = 0;
+	Piece mover = b->board[m->soure_rank][m->soure_file];
+	switch(mover.type) {
+		case None:
+			return 0; //can't exactly put something into check with nothing
+		case Pawn:
+			break;
+		case Knight:
+			break;
+		case Bishop:
+			break;
+		case Rook:
+			break;
+		case Queen:
+			break;
+		case King:
+			break;
+	}
+	return 0;
 }
