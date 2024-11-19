@@ -17,6 +17,8 @@
 int main (void) {
 	
 	Board b;
+	Move m;
+	char move_buffer[10];
 	
   __asm("CPSID   I");
 	
@@ -29,5 +31,14 @@ int main (void) {
 	
 	print_board(&b);
 	
-  for (;;) {  }
+  for (;;) {
+		GetStringSB(move_buffer, 10);
+		m = parse_move(move_buffer);
+		print_move(&m);
+		if (is_pseudolegal(&b, &m)) {
+			PutStringSB("Ok!\r\n",255);
+		} else {
+			PutStringSB("Bad!\r\n",255);
+		}
+	}
 }
