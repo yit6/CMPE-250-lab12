@@ -19,6 +19,7 @@ int main (void) {
 	Board b;
 	Move m;
 	char move_buffer[10];
+	char inCheck;
 	
   __asm("CPSID   I");
 	
@@ -26,15 +27,35 @@ int main (void) {
 	
   __asm("CPSIE   I");
 	
-	b = from_fen("r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R b KQkq -");
+	b = from_fen("rnb1kbnr/pppp3Q/1pp5/1pp5/2P1q3/2P5/PPP2PPP/RNB1KBNR w KQkq - 0 1");
 	//b = from_fen("rnbqkbnr/8/8/1p6/pPp1p1p1/P1PpPpPp/RKRP1P1P/QBBN1N2 w q - 0 27");
 	
 	print_board(&b);
+	
+	inCheck = is_check(&b);
+	
+	switch(inCheck) {
+		case 0:
+			PutStringSB("No check\r\n", 255);
+			break;
+		case 1:
+			PutStringSB("Check on black\r\n", 255);
+			break;
+		case 2:
+			PutStringSB("Check on white\r\n", 255);
+			break;
+		case 3:
+			PutStringSB("Check on both\r\n", 255);
+			break;
+		default:
+			break;
+	}
 	
   for (;;) {
 		GetStringSB(move_buffer, 10);
 		m = parse_move(move_buffer);
 		print_move(&m);
+		
 		if (is_pseudolegal(&b, &m)) {
 			PutStringSB("Ok!\r\n",255);
 		} else {

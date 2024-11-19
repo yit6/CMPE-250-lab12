@@ -191,10 +191,10 @@ char is_pseudolegal(Board *b, Move *m) {
 		case Pawn:
 			if (dx == 0) {
 				if (target.type != None) { return 0; }
-				return m->destination_rank-m->destination_file == (piece.color==White)?-1:1;
+				return m->destination_rank-m->destination_file == (piece.color==White)?1:-1;
 			} else if (dx == 1) {
 				if (target.type == None || target.color == piece.color) { return 0; }
-				return m->destination_rank-m->destination_file == (piece.color==White)?-1:1;
+				return m->destination_rank-m->destination_file == (piece.color==White)?1:-1;
 			} else {
 				return 0;
 			}
@@ -256,22 +256,26 @@ char is_check(Board *b) {
 	
 	for(i = 0; i < 8; i++) {
 		for(j = 0; j < 8; j++) {
-			if(i != white_rank && j != white_file && (checkState & 2) == 0) {
+			Piece p = b->board[i][j];
+			if(p.color == Black && (checkState & 2) == 0) {
 				Move potential;
 				potential.soure_rank = i;
 				potential.soure_file = j;
 				potential.destination_rank = white_rank;
 				potential.destination_file = white_file;
+				potential.promotion = None;
+				//PutStringSB("king pow penis\r\n", 255);
 				if(is_pseudolegal(b, &potential)) {
 					checkState |= 2;
 				}
 			}
-			if(i != black_rank && j != black_file && (checkState & 1) == 0) {
+			if(p.color == White && (checkState & 1) == 0) {
 				Move potential;
 				potential.soure_rank = i;
 				potential.soure_file = j;
 				potential.destination_rank = black_rank;
 				potential.destination_file = black_file;
+				potential.promotion = None;
 				if(is_pseudolegal(b, &potential)) {
 					checkState |= 1;
 				}
@@ -292,9 +296,9 @@ char is_legal(Board *b, Move *m) {
 		return 0;
 	}
 	
-	make_move(b, m);
+	//make_move(b, m);
 	check = is_check(b) & checkMask;
-	make_unmove(b);
+	//make_unmove(b);
 	
 	return check == 0;
 	
