@@ -275,6 +275,13 @@ UART0_S2_NO_RXINV_BRK10_NO_LBKDETECT_CLEAR_FLAGS  EQU  \
 
 ;****************************************************************
 ;MACROs
+			MACRO
+			NEWL
+			MOVS	R0,#'\r'
+			BL		PutChar
+			MOVS	R0,#'\n'
+			BL		PutChar
+			MEND
 ;****************************************************************
 ;Program
 ;C source will contain main ()
@@ -569,6 +576,56 @@ PNH_alpha               ADDS    R0,R0,#'0'
                                 SUBS    R2,R2,#4
                                 BGE             PNH_loop
 PNH_done                POP             {R1,R2,R3,PC}
+                                ENDP
+;---------------------------------------------------------------
+; Get a string from UART, store in R0 with max length R1
+; Outputs length to R7
+								EXPORT GetStringSB
+GetStringSB             PROC    {R0-R5,R7-R14}
+                                PUSH    {R0,R2,R3,LR}
+                                MOVS    R2,#1                   ; Count characters
+                                SUBS    R3,R0,#1                ; Free R0 for GetChar
+
+GS_ReadChLoop   BL              GetChar                 ; Get the character
+                                CMP             R0,#'\b'
+                                BEQ             GS_back
+                                CMP             R0,#0x7F
+                                BEQ             GS_back                 ; Handle backspace if necessary
+                                CMP             R0,#'\r'
+                                BEQ             GS_LoopDone             ; End loop if newline
+                                CMP             R0,#0x20
+                                BLO             GS_ReadChLoop   ; Ignore control characters not already handled
+                                STRB    R0,[R3,R2]              ; Store character typed
+                                ADDS    R2,R2,#1                ; increment character count
+                                BL              PutChar                 ; echo character
+                                CMP             R2,R1
+                                BEQ             GS_BufFull
+                                B               GS_ReadChLoop
+GS_BufFull              SUBS    R2,R2,#1
+                                MOVS    R0,#'\b'
+                                BL              PutChar
+                                MOVS    R0,#' '
+                                BL              PutChar
+                                MOVS    R0,#'\b'
+                                BL              PutChar
+                                B               GS_ReadChLoop
+
+GS_back                 CMP             R2,#1
+                                BEQ             GS_ReadChLoop   ; ignore if string empty
+                                SUBS    R2,R2,#1                ; decrease string length
+                                MOVS    R0,#'\b';
+                                BL              PutChar                 ; move cursor back
+                                MOVS    R0,#' '
+                                BL              PutChar                 ; clear character already there
+                                MOVS    R0,#'\b';
+                                BL              PutChar                 ; move cursor back again
+                                B               GS_ReadChLoop   ; read another character
+
+GS_LoopDone             MOVS    R0,#0
+                                STRB    R0,[R3,R2]              ; Null terminate
+                                NEWL                                    ; print newline
+                                MOVS    R6,R2                   ; move length to R7
+                                POP             {R0,R2,R3,PC}   ; restore registers
                                 ENDP
 
 ;>>>>>   end subroutine code <<<<<

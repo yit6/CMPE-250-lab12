@@ -38,6 +38,9 @@ void print_board(Board *b);
 char is_pseudolegal(Board *b, Move *m);
 char is_check(Board *b, Move *m);
 
+Move parse_move(char *uci);
+void print_move(Move *m);
+
 #define EXERCISE_12_C (1)
 
 typedef int Int32;
