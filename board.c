@@ -134,6 +134,9 @@ void print_board(Board *b) {
 		PutStringSB(divider,255);
 	}
 	PutStringSB(files+2,255);
+	
+	PutStringSB(b->current_turn==White?"White":"Black",255);
+	PutStringSB(" to move\r\n",255);
 }
 
 /***
@@ -154,6 +157,9 @@ char is_pseudolegal(Board *b, Move *m) {
 	
 	// Can't move nothing
 	if (piece.type == None) { return 0; }
+	
+	// Can't move opponents piece
+	if (piece.color != b->current_turn) { return 0; }
 	
 	// Piece has to move
 	if (m->soure_file == m->destination_file && m->soure_rank == m->destination_rank) { return 0; }
@@ -314,6 +320,8 @@ char is_legal(Board *b, Move *m) {
 void make_move(Board *b, Move *m) {
 	struct game_history hist;
 	
+	b->current_turn ^= 1;
+	
 	hist.captured = b->board[m->destination_rank][m->destination_file];
 	hist.castling_rights = b->castling_rights;
 	hist.move = *m;
@@ -328,6 +336,8 @@ void make_unmove(Board *b) {
 	struct game_history hist;
 	Move m;
 	
+	b->current_turn ^= 1;
+	
 	if (b->ply == 0) { return; }
 	
 	hist = b->hist[--(b->ply)];
@@ -335,4 +345,44 @@ void make_unmove(Board *b) {
 	
 	b->board[m.soure_rank][m.soure_file] = b->board[m.destination_rank][m.destination_file];
 	b->board[m.destination_rank][m.destination_file] = hist.captured;
+}
+
+void for_each_pseudolegal(Board *b, void f(int i, Move m)) {
+	int sf,sr,df,dr,i=0;
+	Move m;
+	
+	for (sf = 0; sf < 8; sf++) {
+		for (sr = 0; sr < 8; sr++) {
+			if (b->board[sr][sf].type == None) { continue; }
+			
+			if (b->board[sr][sf].type == Pawn) {
+				dr = sr + (b->current_turn==White?1:-1);
+				for (df = sf-1; df <= sf+1; df++) {
+					if (dr == (b->current_turn==White)?7:0) {
+						for (m.promotion = Knight; m.promotion <= Queen; m.promotion++) {
+							m.destination_file = df;
+							m.destination_rank = dr;
+							if (is_pseudolegal(b, &m)) { f(i++,m); }
+						}
+					} else {
+						m.promotion = None;
+						m.destination_file = df;
+						m.destination_rank = dr;
+						
+						if (is_pseudolegal(b, &m)) { f(i++,m); }
+					}
+				}
+			}
+			
+			m.promotion = None;
+			
+			for (dr = 0; dr < 8; dr++) {
+				for (df = 0; df < 8; df++) {
+					m.destination_file = df;
+					m.destination_rank = dr;
+					if (is_pseudolegal(b, &m)) { f(i++,m); }
+				}
+			}
+		}
+	}
 }

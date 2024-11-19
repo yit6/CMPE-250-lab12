@@ -45,6 +45,8 @@ typedef struct board {
 	Piece board[8][8];
 	CastlingRights castling_rights;
 	
+	Color current_turn;
+	
 	int ply;
 	struct game_history hist[255];
 	
@@ -58,6 +60,7 @@ char is_check(Board *b);
 char is_legal(Board *b, Move *m);
 void make_move(Board *b, Move *m);
 void make_unmove(Board *b);
+void for_each_pseudolegal(Board *b, void f(int i, Move m));
 
 Move parse_move(char *uci);
 void print_move(Move *m);
