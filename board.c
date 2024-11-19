@@ -304,9 +304,9 @@ char is_legal(Board *b, Move *m) {
 		return 0;
 	}
 	
-	//make_move(b, m);
+	make_move(b, m);
 	check = is_check(b) & checkMask;
-	//make_unmove(b);
+	make_unmove(b);
 	
 	return check == 0;
 	

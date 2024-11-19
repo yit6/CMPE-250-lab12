@@ -56,15 +56,17 @@ int main (void) {
 		GetStringSB(move_buffer, 10);
 		m = parse_move(move_buffer);
 		print_move(&m);
+		PutStringSB("\r\n",255);
 		
 		if (is_pseudolegal(&b, &m)) {
 			PutStringSB("Ok!\r\n",255);
 		} else {
 			PutStringSB("Bad!\r\n",255);
 		}
-		make_move(&b,&m);
-		print_board(&b);
-		make_unmove(&b);
-		print_board(&b);
+		if (is_legal(&b, &m)) {
+			PutStringSB("Legal!\r\n",255);
+		} else {
+			PutStringSB("Not Legal!\r\n",255);
+		}
 	}
 }
