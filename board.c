@@ -174,7 +174,7 @@ char is_pseudolegal(Board *b, Move *m) {
 	} else {
 		
 		// Pawns must promote when the reach the end
-		if (piece.type == Pawn && m->destination_rank == piece.color==White ? 7 : 0) { return 0; }
+		if (piece.type == Pawn && m->destination_rank == (piece.color==White ? 7 : 0)) { return 0; }
 	}
 	
 	// Castling goes here
