@@ -67,39 +67,22 @@ void print_board(Board *b) {
 	
 	for (rank = 7; rank >= 0; rank--) {
 		for (file = 0; file < 8; file++) {
-			char c[5] = "|   ";
-			switch (b->board[rank][file].type) {
-				case None:
-					PutStringSB(c,255);
-					continue;
-				case Pawn:
-					c[2] = 'P';
-					break;
-				case Knight:
-					c[2] = 'N';
-					break;
-				case Bishop:
-					c[2] = 'B';
-					break;
-				case Rook:
-					c[2] = 'R';
-					break;
-				case Queen:
-					c[2] = 'Q';
-					break;
-				case King:
-					c[2] = 'K';
-					break;
+			char c[4] = "|   ";
+			if (b->board[rank][file].type == None) {
+				PutStringSB(c,4);
+				continue;
 			}
+			
+			c[2] = "PNBRQK"[b->board[rank][file].type-1];
 			
 			if (b->board[rank][file].color == Black) {
 				c[2] |= 1<<5;
 			}
 			
-			PutStringSB(c,255);
+			PutStringSB(c,4);
 		}
 		divider[40] = " 1234567"[rank];
 		PutStringSB(divider,255);
 	}
-	PutStringSB(files,255);
+	PutStringSB(files+2,255);
 }
