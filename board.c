@@ -218,16 +218,58 @@ char is_pseudolegal(Board *b, Move *m) {
 char is_check(Board *b, Move *m) {
 	int i = 0;
 	int j = 0;
+	int k = 0;
+	
+	int rank = m->destination_rank;
+	int file = m->destination_file;
 	Piece mover = b->board[m->soure_rank][m->soure_file];
+	
+	int offset = mover.color == White ? 1 : -1;
+	if(m->promotion != 0) {
+		mover.type = m->promotion;
+	}
 	switch(mover.type) {
 		case None:
 			return 0; //can't exactly put something into check with nothing
 		case Pawn:
-			
+			if((b->board[rank + offset][file + 1].type == King && b->board[rank + offset][file + 1].color != mover.color) ||
+						(b->board[rank + offset][file - 1].type == King && b->board[rank + offset][file - 1].color != mover.color)) {
+				return 2 - mover.color;
+			}
 			break;
-		case Knight:
+		case Knight: //how tf do i do this clean
+			for(i = m->destination_rank - 2; i < m->destination_rank + 2; i++) {
+				for(j = m->destination_file - 2; j < m->destination_file + 2; j++) {
+					int dx = i - m->destination_rank;
+					int dy = j - m->destination_file;
+					Piece p = b->board[i][j];
+					if(dx * dx + dy * dy == 5 && p.type == King && p.color != mover.color) {
+						return 1 + p.color;
+					}
+				}
+			}
 			break;
 		case Bishop:
+			for(i = -1; i <= 1; i += 2) {
+				for(j = -1; j <= 1; j += 2) {
+					for(k = 0; k < 8; k++) {
+						Piece p;
+						if(rank + i * k < 0 || rank + i * k >= 8 ||
+									file + j * k < 0 || file + j * k >= 8) {
+							break;
+						}
+						p = b->board[rank + i * k][file + j * k];
+						if(p.type != None) {
+							if(p.type == King && p.color != mover.color) {
+								return 1 + p.color;
+							} else {
+								break;
+							}
+						}
+					}
+				}
+			}
+			return 0;
 			break;
 		case Rook:
 			break;
