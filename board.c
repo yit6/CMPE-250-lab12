@@ -189,7 +189,15 @@ char is_pseudolegal(Board *b, Move *m) {
 		case None:
 			return 0;
 		case Pawn:
-			return 0;
+			if (dx == 0) {
+				if (target.type != None) { return 0; }
+				return m->destination_rank-m->destination_file == (piece.color==White)?-1:1;
+			} else if (dx == 1) {
+				if (target.type == None || target.color == piece.color) { return 0; }
+				return m->destination_rank-m->destination_file == (piece.color==White)?-1:1;
+			} else {
+				return 0;
+			}
 		case Knight:
 			return dx*dx + dy*dy == 5;
 		case Bishop:
