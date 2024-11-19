@@ -280,9 +280,6 @@ char is_check(Board *b) {
 				potential.promotion = None;
 				if(is_pseudolegal(b, &potential)) {
 					checkState |= 1;
-					PutStringSB("you make me sick ", 255);
-					PutNumHex(i);
-					PutNumHex(j);
 				}
 			}
 			if(p.color == White && (checkState & 2) == 0) {
@@ -350,7 +347,7 @@ void make_unmove(Board *b) {
 }
 
 void for_each_pseudolegal(Board *b, void f(int i, Move m)) {
-	int sf,sr,df,dr,i=0;
+	signed char sf,sr,df,dr,i=0;
 	Move m;
 	
 	// try to move every piece
@@ -407,4 +404,20 @@ void for_each_pseudolegal(Board *b, void f(int i, Move m)) {
 			}
 		}
 	}
+}
+
+Board *_fe_helper_board;
+void (*_fe_helper_f)(int i, Move m);
+
+void _fe_helper(int i, Move m) {
+	if (is_legal(_fe_helper_board, &m)) {
+		_fe_helper_f(i, m);
+	}
+}
+
+void for_each_legal(Board *b, void f(int i, Move m)) {
+	_fe_helper_board = b;
+	_fe_helper_f = f;
+	
+	for_each_pseudolegal(b, _fe_helper);
 }

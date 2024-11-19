@@ -61,6 +61,7 @@ char is_legal(Board *b, Move *m);
 void make_move(Board *b, Move *m);
 void make_unmove(Board *b);
 void for_each_pseudolegal(Board *b, void f(int i, Move m));
+void for_each_legal(Board *b, void f(int i, Move m));
 
 Move parse_move(char *uci);
 void print_move(Move *m);
