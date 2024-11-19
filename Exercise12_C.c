@@ -36,7 +36,7 @@ int main (void) {
 	
 	from_fen(&b,"rnb1kbnr/pppp3Q/1pp5/1pp5/2P1q3/2P5/PPP1KPPP/RNB2BNR w kq - 0 1");
 	//b = from_fen("rnbqkbnr/8/8/1p6/pPp1p1p1/P1PpPpPp/RKRP1P1P/QBBN1N2 w q - 0 27");
-	
+
   for (;;) {	
 		print_board(&b);
 		
