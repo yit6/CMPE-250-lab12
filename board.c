@@ -54,6 +54,13 @@ Board new_board(void) {
 	p.type = King;
 	b.board[7][4] = p;
 	
+	b.castling_rights.white_kingside = 1;
+	b.castling_rights.white_queenside = 1;
+	b.castling_rights.black_kingside = 1;
+	b.castling_rights.black_queenside = 1;
+	
+	b.ply = 0;
+	
 	return b;
 }
 
@@ -93,6 +100,13 @@ Board from_fen(char *fen) {
 		
 		b.board[rank][file++] = p;
 	}
+	
+	b.castling_rights.white_kingside = 1;
+	b.castling_rights.white_queenside = 1;
+	b.castling_rights.black_kingside = 1;
+	b.castling_rights.black_queenside = 1;
+	
+	b.ply = 0;
 	
 	return b;
 }
@@ -302,4 +316,28 @@ char is_legal(Board *b, Move *m) {
 	
 	return check == 0;
 	
+}
+void make_move(Board *b, Move *m) {
+	struct game_history hist;
+	
+	hist.captured = b->board[m->destination_rank][m->destination_file];
+	hist.castling_rights = b->castling_rights;
+	hist.move = *m;
+	
+	b->hist[b->ply++] = hist;
+	
+	b->board[m->destination_rank][m->destination_file] = b->board[m->soure_rank][m->soure_file];
+	b->board[m->soure_rank][m->soure_file].type = None;
+}
+
+void make_unmove(Board *b) {
+	struct game_history hist;
+	Move m;
+	
+	if (b->ply == 0) { return; }
+	
+	hist = b->hist[--(b->ply)];
+	m = hist.move;
+	
+	b->board[m.soure_rank][m.soure_file] = b->board[m.destination_rank][m.destination_file];
 }
