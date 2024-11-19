@@ -183,8 +183,6 @@ char is_pseudolegal(Board *b, Move *m) {
 		if (piece.type == Pawn && m->destination_rank == (piece.color==White ? 7 : 0)) { return 0; }
 	}
 	
-	// Castling goes here
-	
 	// Can't attack own piece
 	if (target.type != None && piece.color == target.color) { return 0; }
 	
@@ -205,7 +203,13 @@ char is_pseudolegal(Board *b, Move *m) {
 		case Pawn:
 			if (dx == 0) {
 				if (target.type != None) { return 0; }
-				return m->destination_rank-m->soure_rank == ((piece.color==White)?1:-1);
+				if (sy != (piece.color==White?1:-1)) { return 0; }
+				if (dy == 2) {
+					// Can't jump over piece
+					int t = (m->soure_rank+m->destination_rank)/2;
+					return b->board[t][m->soure_rank].type == None;
+				}
+				return dy == 1;
 			} else if (dx == 1) {
 				if (target.type == None || target.color == piece.color) { return 0; }
 				return m->destination_rank-m->soure_rank == ((piece.color==White)?1:-1);
@@ -367,7 +371,6 @@ void for_each_pseudolegal(Board *b, void f(int i, Move m)) {
 			if (b->board[sr][sf].type == Pawn) {
 				
 				// Pawns can only move one rank
-				// TODO: this is false
 				dr = sr + (b->current_turn==White?1:-1);
 				
 				// Pawns can move at most one file from where they start
@@ -384,8 +387,14 @@ void for_each_pseudolegal(Board *b, void f(int i, Move m)) {
 					} else {
 						m.promotion = None;						
 						if (is_pseudolegal(b, &m)) { f(i++,m); }
-					}
-					
+					}	
+				}
+				
+				if (sr == (b->current_turn==White?1:6)) {
+					m.destination_rank = sr + (b->current_turn==White?2:-2);
+					m.destination_file = sf;
+					m.promotion = None;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
 				}
 			} else {
 			
