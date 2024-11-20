@@ -71,6 +71,8 @@ unsigned int random(void*);
 Move parse_move(char *uci);
 void print_move(Move *m);
 
+unsigned long long perft(Board *b, int depth);
+
 #define EXERCISE_12_C (1)
 
 typedef int Int32;

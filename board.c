@@ -424,12 +424,10 @@ void make_unmove(Board *b) {
 	b->board[m.destination_rank][m.destination_file] = hist.captured;
 	
 	// En passant
-	if (b->board[m.soure_rank][m.soure_file].type == Pawn) {
-		if ( m.destination_file == hist.en_pas_file ) {
-			if( m.destination_rank == (b->current_turn==White?5:3)) {
+	if (b->board[m.soure_rank][m.soure_file].type == Pawn && m.destination_file == hist.en_pas_file && m.destination_rank == (b->current_turn==White?5:3)) {
 		b->board[(m.destination_rank+m.soure_rank)/2][m.destination_file].type = Pawn;
 		b->board[(m.destination_rank+m.soure_rank)/2][m.destination_file].color = b->current_turn^1;
-	}}}
+	}
 	
 	// Castling
 	if (b->board[m.soure_rank][m.soure_file].type == King && m.soure_file == 4 && (m.destination_file == 2 || m.destination_file == 6)) {

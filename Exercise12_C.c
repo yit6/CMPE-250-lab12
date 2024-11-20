@@ -28,6 +28,8 @@ int main (void) {
 	
 	Move m;
 	char move_buffer[10];
+	char perft_print[20];
+	unsigned long long perft_num;
 	
   __asm("CPSID   I");
 	
@@ -36,11 +38,10 @@ int main (void) {
   __asm("CPSIE   I");
 	
 	new_board(&b);
-	//b = from_fen("rnbqkbnr/8/8/1p6/pPp1p1p1/P1PpPpPp/RKRP1P1P/QBBN1N2 w q - 0 27");
 
   for (;;) {	
 		print_board(&b);
-		for_each_legal(&b, print_moves);
+		//for_each_legal(&b, print_moves);
 		
 		get_input:
 		GetStringSB(move_buffer, 10);
@@ -54,6 +55,12 @@ int main (void) {
 			m = random_move(&b);
 			make_move(&b, &m);
 			continue;
+		}
+		if (*move_buffer == 'p') {
+			perft_num = perft(&b, move_buffer[1]-'0');
+			sprintf(perft_print, "%lld nodes.\r\n", perft_num);
+			PutStringSB(perft_print, 255);
+			goto get_input;
 		}
 		
 		print_move(&m);
