@@ -489,17 +489,19 @@ void for_each_pseudolegal(Board *b, void f(int i, Move m)) {
 }
 
 Board *_fe_helper_board;
+int _fe_count;
 void (*_fe_helper_f)(int i, Move m);
 
 void _fe_helper(int i, Move m) {
 	if (is_legal(_fe_helper_board, &m)) {
-		_fe_helper_f(i, m);
+		_fe_helper_f(_fe_count++, m);
 	}
 }
 
 void for_each_legal(Board *b, void f(int i, Move m)) {
 	_fe_helper_board = b;
 	_fe_helper_f = f;
+	_fe_count = 0;
 	
 	for_each_pseudolegal(b, _fe_helper);
 }
