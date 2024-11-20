@@ -22,7 +22,13 @@ void print_moves(int i, Move m) {
 	print_move(&m);
 	PutStringSB("\r\n",255);
 }
+
 unsigned int seed = 1;
+
+unsigned int random() {
+	seed = seed * 33456789 + 2345600078;
+	return seed;
+}
 
 int main (void) {
 	

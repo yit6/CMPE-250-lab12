@@ -540,7 +540,7 @@ void for_each_legal(Board *b, void f(int i, Move m)) {
 Move _random_move;
 
 void _random_move_helper(int i, Move m) {
-	if (rand()%(i+1) == 0) {
+	if (random()%(i+1) == 0) {
 		_random_move = m;
 	}
 }
