@@ -22,6 +22,7 @@ void print_moves(int i, Move m) {
 	print_move(&m);
 	PutStringSB("\r\n",255);
 }
+unsigned int seed = 1;
 
 int main (void) {
 	
