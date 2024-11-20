@@ -36,6 +36,7 @@ typedef struct move {
 struct game_history {
 	CastlingRights castling_rights;
 	Piece captured;
+	char en_pas_file;
 	Move move;
 };
 
@@ -46,6 +47,7 @@ typedef struct board {
 	CastlingRights castling_rights;
 	
 	Color current_turn;
+	char en_pas_file; // -1 for no en pas
 	
 	int ply;
 	struct game_history hist[255];

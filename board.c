@@ -58,6 +58,8 @@ void new_board(Board *b) {
 	b->castling_rights.black_kingside = 1;
 	b->castling_rights.black_queenside = 1;
 	
+	b->en_pas_file = -1;
+	
 	b->ply = 0;
 }
 
@@ -102,6 +104,8 @@ void from_fen(Board *b, char *fen) {
 	b->castling_rights.black_kingside = 1;
 	b->castling_rights.black_queenside = 1;
 	
+	b->en_pas_file = -1;
+	
 	b->ply = 0;
 }
 
@@ -135,10 +139,10 @@ void print_board(Board *b) {
 	}
 	PutStringSB(files+2,255);
 	
-	if (b->castling_rights.white_kingside)  { PutChar('K'); }
-	if (b->castling_rights.white_queenside) { PutChar('Q'); }
-	if (b->castling_rights.black_kingside)  { PutChar('k'); }
-	if (b->castling_rights.black_queenside) { PutChar('q'); }	
+	//if (b->castling_rights.white_kingside)  { PutChar('K'); }
+	//if (b->castling_rights.white_queenside) { PutChar('Q'); }
+	//if (b->castling_rights.black_kingside)  { PutChar('k'); }
+	//if (b->castling_rights.black_queenside) { PutChar('q'); }	
 	
 	PutStringSB(b->current_turn==White?"White":"Black",255);
 	PutStringSB(" to move\r\n",255);
@@ -216,7 +220,9 @@ char is_pseudolegal(Board *b, Move *m) {
 				}
 				return dy == 1;
 			} else if (dx == 1) {
-				if (target.type == None || target.color == piece.color) { return 0; }
+				if (target.type == None || target.color == piece.color) {
+					if (m->destination_file != b->en_pas_file || m->destination_rank != (b->current_turn==White?5:3)) { return 0; }
+				}
 				return m->destination_rank-m->soure_rank == ((piece.color==White)?1:-1);
 			} else {
 				return 0;
@@ -347,8 +353,8 @@ char is_legal(Board *b, Move *m) {
 	make_unmove(b);
 	
 	return check == 0;
-	
 }
+
 void make_move(Board *b, Move *m) {
 	struct game_history hist;
 	
@@ -356,11 +362,20 @@ void make_move(Board *b, Move *m) {
 	
 	hist.captured = b->board[m->destination_rank][m->destination_file];
 	hist.castling_rights = b->castling_rights;
+	hist.en_pas_file = b->en_pas_file;
 	hist.move = *m;
 	
 	b->hist[b->ply++] = hist;
-		// Castling
 	
+	// En Passant
+	if (b->board[m->soure_rank][m->soure_file].type == Pawn && m->destination_file == b->en_pas_file && m->destination_rank == (b->current_turn==White?3:5)) {
+		b->board[(m->soure_rank+m->destination_rank)/2][b->en_pas_file].type = None;
+	}
+	if (b->board[m->soure_rank][m->soure_file].type == Pawn && abs(m->destination_rank-m->soure_rank) == 2) {
+		b->en_pas_file = m->soure_file;
+	}
+	
+	// Castling
 	if (b->board[m->soure_rank][m->soure_file].type == King && m->soure_file == 4 && (m->destination_file == 2 || m->destination_file == 6)) {
 		if (m->destination_file == 6 && m->destination_rank == 0) {
 			b->board[0][7].type = None;
@@ -403,9 +418,18 @@ void make_unmove(Board *b) {
 	hist = b->hist[--(b->ply)];
 	m = hist.move;
 	b->castling_rights = hist.castling_rights;
+	b->en_pas_file = hist.en_pas_file;
 	
 	b->board[m.soure_rank][m.soure_file] = b->board[m.destination_rank][m.destination_file];
 	b->board[m.destination_rank][m.destination_file] = hist.captured;
+	
+	// En passant
+	if (b->board[m.soure_rank][m.soure_file].type == Pawn) {
+		if ( m.destination_file == hist.en_pas_file ) {
+			if( m.destination_rank == (b->current_turn==White?5:3)) {
+		b->board[(m.destination_rank+m.soure_rank)/2][m.destination_file].type = Pawn;
+		b->board[(m.destination_rank+m.soure_rank)/2][m.destination_file].color = b->current_turn^1;
+	}}}
 	
 	// Castling
 	if (b->board[m.soure_rank][m.soure_file].type == King && m.soure_file == 4 && (m.destination_file == 2 || m.destination_file == 6)) {
