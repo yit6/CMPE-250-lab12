@@ -73,7 +73,7 @@ int main (void) {
 			perft_num = perft(&b, move_buffer[1]-'0');
 			sprintf(perft_print, "%lld nodes.\r\n", perft_num);
 			PutStringSB(perft_print, 255);
-			//print_board(&b);
+			print_board(&b);
 			goto get_input;
 		}
 		

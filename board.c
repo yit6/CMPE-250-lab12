@@ -281,6 +281,12 @@ char is_attacked(Board *b, Color color, char rank, char file) {
 			Piece p = b->board[i][j];
 			if(p.color == color && (checkState & 2) == 0) {
 				Move potential;
+				if (p.type == Pawn) {
+					if (abs(file-j) != 1) { continue; }
+					if (i-rank != (color==White?-1:1)) { continue; }
+					b->current_turn = original;
+					return 1;
+				}
 				potential.soure_rank = i;
 				potential.soure_file = j;
 				potential.destination_rank = rank;
@@ -374,7 +380,10 @@ void make_move(Board *b, Move *m) {
 	// En Passant
 	if (b->board[m->soure_rank][m->soure_file].type == Pawn && m->destination_file == b->en_pas_file && m->destination_rank == (b->current_turn==White?2:5)) {
 		b->board[m->soure_rank][b->en_pas_file].type = None;
-	}
+	}	
+	
+	b->en_pas_file = -1;
+	
 	if (b->board[m->soure_rank][m->soure_file].type == Pawn && abs(m->destination_rank-m->soure_rank) == 2) {
 		b->en_pas_file = m->soure_file;
 	}
