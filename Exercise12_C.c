@@ -59,6 +59,9 @@ int main (void) {
 		}
 		if (*move_buffer == 'r') {
 			m = random_move(&b);
+			PutStringSB("Doing: ",255);
+			print_move(&m);
+			PutStringSB("\r\n",255);
 			make_move(&b, &m);
 			continue;
 		}
@@ -66,6 +69,7 @@ int main (void) {
 			perft_num = perft(&b, move_buffer[1]-'0');
 			sprintf(perft_print, "%lld nodes.\r\n", perft_num);
 			PutStringSB(perft_print, 255);
+			print_board(&b);
 			goto get_input;
 		}
 		
