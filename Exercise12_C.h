@@ -94,3 +94,7 @@ void PutChar (char Character);
 void PutNumHex (UInt32);
 void PutNumUB (UInt8);
 void PutStringSB (char String[], int StringBufferCapacity);
+
+//IO stuff
+void init_LED(void);
+void set_LED(char rgb); //bit 2 r, 1 g, 0 b

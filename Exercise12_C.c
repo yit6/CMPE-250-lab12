@@ -40,10 +40,12 @@ int main (void) {
   __asm("CPSID   I");
 	
   Init_UART0_IRQ();
+	init_LED();
 	
   __asm("CPSIE   I");
 	
-	new_board(&b);
+	//new_board(&b);
+	from_fen(&b, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
 
   for (;;) {	
 		print_board(&b);
