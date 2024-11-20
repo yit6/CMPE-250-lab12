@@ -44,7 +44,7 @@ int main (void) {
 	
   __asm("CPSIE   I");
 	
-	set_LED(0x4);
+	set_LED(0x6);
 	
 	//new_board(&b);
 	from_fen(&b, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
@@ -73,7 +73,7 @@ int main (void) {
 			perft_num = perft(&b, move_buffer[1]-'0');
 			sprintf(perft_print, "%lld nodes.\r\n", perft_num);
 			PutStringSB(perft_print, 255);
-			print_board(&b);
+			//print_board(&b);
 			goto get_input;
 		}
 		

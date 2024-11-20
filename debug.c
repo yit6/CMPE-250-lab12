@@ -14,19 +14,19 @@ void _perft_helper(int i, Move m) {
 	
 	if (_perft_depth == 0) {
 		_perft_num++;
-		//print_board(_perft_board);
 	} else {
 		for_each_legal(_perft_board, _perft_helper);
 	}	
 	
 	if (_perft_depth == _perft_subtotal_level) {
 		print_move(&m);
-		sprintf(_perft_sb, ": %lld nodes\r\n", _perft_num-_perft_subtotal);
+		sprintf(_perft_sb, ": %lld\r\n", _perft_num-_perft_subtotal);
 		PutStringSB(_perft_sb, 255);
 		_perft_subtotal = _perft_num;
 	}
 	
 	make_unmove(_perft_board);
+	
 	_perft_depth++;
 }
 

@@ -274,6 +274,8 @@ char is_attacked(Board *b, Color color, char rank, char file) {
 	int i;
 	int j;
 	char checkState = 0;
+	Color original = b->current_turn;
+	b->current_turn = color;
 	for(i = 0; i < 8; i++) {
 		for(j = 0; j < 8; j++) {
 			Piece p = b->board[i][j];
@@ -285,11 +287,13 @@ char is_attacked(Board *b, Color color, char rank, char file) {
 				potential.destination_file = file;
 				potential.promotion = None;
 				if(is_pseudolegal(b, &potential)) {
+					b->current_turn = original;
 					return 1;
 				}
 			}
 		}
 	}
+	b->current_turn = original;
 	return 0;
 }
 
@@ -369,7 +373,7 @@ void make_move(Board *b, Move *m) {
 	
 	// En Passant
 	if (b->board[m->soure_rank][m->soure_file].type == Pawn && m->destination_file == b->en_pas_file && m->destination_rank == (b->current_turn==White?2:5)) {
-		b->board[(m->soure_rank+m->destination_rank)/2][b->en_pas_file].type = None;
+		b->board[m->soure_rank][b->en_pas_file].type = None;
 	}
 	if (b->board[m->soure_rank][m->soure_file].type == Pawn && abs(m->destination_rank-m->soure_rank) == 2) {
 		b->en_pas_file = m->soure_file;
@@ -397,12 +401,14 @@ void make_move(Board *b, Move *m) {
 			b->board[7][3].type = Rook;
 			b->board[7][3].color = Black;
 		}
-		b->castling_rights.white_kingside  = 0;
-		b->castling_rights.white_queenside = 0;
-		b->castling_rights.black_kingside  = 0;
-		b->castling_rights.black_queenside = 0;
+		if (b->current_turn == Black) {
+			b->castling_rights.white_kingside  = 0;
+			b->castling_rights.white_queenside = 0;
+		} else {
+			b->castling_rights.black_kingside  = 0;
+			b->castling_rights.black_queenside = 0;
+		}
 	}
-	
 	b->board[m->destination_rank][m->destination_file] = b->board[m->soure_rank][m->soure_file];
 	b->board[m->soure_rank][m->soure_file].type = None;
 }
@@ -425,8 +431,8 @@ void make_unmove(Board *b) {
 	
 	// En passant
 	if (b->board[m.soure_rank][m.soure_file].type == Pawn && m.destination_file == hist.en_pas_file && m.destination_rank == (b->current_turn==White?5:2)) {
-		b->board[(m.destination_rank+m.soure_rank)/2][m.destination_file].type = Pawn;
-		b->board[(m.destination_rank+m.soure_rank)/2][m.destination_file].color = b->current_turn^1;
+		b->board[m.soure_rank][m.destination_file].type = Pawn;
+		b->board[m.soure_rank][m.destination_file].color = b->current_turn^1;
 	}
 	
 	// Castling
