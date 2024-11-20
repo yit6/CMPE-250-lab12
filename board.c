@@ -216,7 +216,7 @@ char is_pseudolegal(Board *b, Move *m) {
 				if (dy == 2) {
 					// Can't jump over piece
 					int t = (m->soure_rank+m->destination_rank)/2;
-					return b->board[t][m->soure_rank].type == None;
+					return b->board[t][m->soure_file].type == None;
 				}
 				return dy == 1;
 			} else if (dx == 1) {
