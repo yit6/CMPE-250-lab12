@@ -247,6 +247,7 @@ char is_pseudolegal(Board *b, Move *m) {
 				if (m->destination_file == 2 && b->current_turn == Black && !b->castling_rights.black_queenside) { return 0; }
 				
 				// Further checks go in is_legal()
+				if (m->destination_file==2 && b->board[m->destination_rank][1].type != None) { return 0; }
 				return b->board[m->destination_rank][(m->soure_file+m->destination_file)/2].type == None;
 			}
 			
@@ -333,6 +334,14 @@ char is_legal(Board *b, Move *m) {
 		return 0;
 	}
 	
+	
+	// Can't castle through check
+	if (b->board[m->soure_rank][m->soure_file].type == King && m->soure_file == 4 && (m->destination_file == 2 || m->destination_file == 6)) {
+		if (is_attacked(b, b->current_turn^1, m->soure_rank, (m->soure_file+m->destination_file)/2)) {
+			return 0;
+		}
+	}
+	
 	make_move(b, m);
 	check = is_check(b) & checkMask;
 	make_unmove(b);
@@ -354,29 +363,29 @@ void make_move(Board *b, Move *m) {
 	
 	if (b->board[m->soure_rank][m->soure_file].type == King && m->soure_file == 4 && (m->destination_file == 2 || m->destination_file == 6)) {
 		if (m->destination_file == 6 && m->destination_rank == 0) {
-			b->castling_rights.white_kingside  = 0;
 			b->board[0][7].type = None;
 			b->board[0][5].type = Rook;
 			b->board[0][5].color = White;
 		}
 		if (m->destination_file == 2 && m->destination_rank == 0) {
-			b->castling_rights.white_queenside = 0;
 			b->board[0][0].type = None;
 			b->board[0][3].type = Rook;
 			b->board[0][3].color = White;
 		}
 		if (m->destination_file == 6 && m->destination_rank == 7) {
-			b->castling_rights.black_kingside  = 0;
 			b->board[7][7].type = None;
 			b->board[7][5].type = Rook;
 			b->board[7][5].color = Black;
 		}
 		if (m->destination_file == 2 && m->destination_rank == 7) {
-			b->castling_rights.black_queenside = 0;
 			b->board[7][0].type = None;
 			b->board[7][3].type = Rook;
 			b->board[7][3].color = Black;
 		}
+		b->castling_rights.white_kingside  = 0;
+		b->castling_rights.white_queenside = 0;
+		b->castling_rights.black_kingside  = 0;
+		b->castling_rights.black_queenside = 0;
 	}
 	
 	b->board[m->destination_rank][m->destination_file] = b->board[m->soure_rank][m->soure_file];
