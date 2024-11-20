@@ -221,7 +221,7 @@ char is_pseudolegal(Board *b, Move *m) {
 				return dy == 1;
 			} else if (dx == 1) {
 				if (target.type == None || target.color == piece.color) {
-					if (m->destination_file != b->en_pas_file || m->destination_rank != (b->current_turn==White?5:3)) { return 0; }
+					if (m->destination_file != b->en_pas_file || m->destination_rank != (b->current_turn==White?5:2)) { return 0; }
 				}
 				return m->destination_rank-m->soure_rank == ((piece.color==White)?1:-1);
 			} else {
@@ -368,7 +368,7 @@ void make_move(Board *b, Move *m) {
 	b->hist[b->ply++] = hist;
 	
 	// En Passant
-	if (b->board[m->soure_rank][m->soure_file].type == Pawn && m->destination_file == b->en_pas_file && m->destination_rank == (b->current_turn==White?3:5)) {
+	if (b->board[m->soure_rank][m->soure_file].type == Pawn && m->destination_file == b->en_pas_file && m->destination_rank == (b->current_turn==White?2:5)) {
 		b->board[(m->soure_rank+m->destination_rank)/2][b->en_pas_file].type = None;
 	}
 	if (b->board[m->soure_rank][m->soure_file].type == Pawn && abs(m->destination_rank-m->soure_rank) == 2) {
@@ -424,7 +424,7 @@ void make_unmove(Board *b) {
 	b->board[m.destination_rank][m.destination_file] = hist.captured;
 	
 	// En passant
-	if (b->board[m.soure_rank][m.soure_file].type == Pawn && m.destination_file == hist.en_pas_file && m.destination_rank == (b->current_turn==White?5:3)) {
+	if (b->board[m.soure_rank][m.soure_file].type == Pawn && m.destination_file == hist.en_pas_file && m.destination_rank == (b->current_turn==White?5:2)) {
 		b->board[(m.destination_rank+m.soure_rank)/2][m.destination_file].type = Pawn;
 		b->board[(m.destination_rank+m.soure_rank)/2][m.destination_file].color = b->current_turn^1;
 	}
