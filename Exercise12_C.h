@@ -56,6 +56,7 @@ void new_board(Board *b);
 void from_fen(Board *b, char *fen);
 void print_board(Board *b);
 char is_pseudolegal(Board *b, Move *m);
+char is_attacked(Board *n, char rank, char file);
 char is_check(Board *b);
 char is_legal(Board *b, Move *m);
 void make_move(Board *b, Move *m);
@@ -63,7 +64,7 @@ void make_unmove(Board *b);
 void for_each_pseudolegal(Board *b, void f(int i, Move m));
 void for_each_legal(Board *b, void f(int i, Move m));
 Move random_move(Board *b);
-unsigned int random();
+unsigned int random(void*);
 
 Move parse_move(char *uci);
 void print_move(Move *m);

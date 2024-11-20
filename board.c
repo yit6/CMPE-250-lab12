@@ -263,11 +263,33 @@ char is_pseudolegal(Board *b, Move *m) {
 	return 1;
 }
 
+char is_attacked(Board *b, char rank, char file) {
+	int i;
+	int j;
+	char checkState = 0;
+	for(i = 0; i < 8; i++) {
+		for(j = 0; j < 8; j++) {
+			Piece p = b->board[i][j];
+			if(p.color == White && (checkState & 2) == 0) {
+				Move potential;
+				potential.soure_rank = i;
+				potential.soure_file = j;
+				potential.destination_rank = rank;
+				potential.destination_file = file;
+				potential.promotion = None;
+				if(is_pseudolegal(b, &potential)) {
+					return 1;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
 //checks if a move puts either king into check, returns 0 for no check, 1 for white check, 2 for black check, 3 for both
 char is_check(Board *b) {
 	int i;
 	int j;
-	int k;
 	
 	int white_rank = -1;
 	int white_file = -1;
@@ -294,33 +316,9 @@ char is_check(Board *b) {
 
 	// check if each piece can move to king
 	
-	for(i = 0; i < 8; i++) {
-		for(j = 0; j < 8; j++) {
-			Piece p = b->board[i][j];
-			if(p.color == Black && (checkState & 1) == 0) {
-				Move potential;
-				potential.soure_rank = i;
-				potential.soure_file = j;
-				potential.destination_rank = white_rank;
-				potential.destination_file = white_file;
-				potential.promotion = None;
-				if(is_pseudolegal(b, &potential)) {
-					checkState |= 1;
-				}
-			}
-			if(p.color == White && (checkState & 2) == 0) {
-				Move potential;
-				potential.soure_rank = i;
-				potential.soure_file = j;
-				potential.destination_rank = black_rank;
-				potential.destination_file = black_file;
-				potential.promotion = None;
-				if(is_pseudolegal(b, &potential)) {
-					checkState |= 2;
-				}
-			}
-		}
-	}
+	checkState |= is_attacked(b, white_rank, white_file);
+	checkState |= is_attacked(b, black_rank, black_file) << 1;
+	
 	return checkState;
 }
 
