@@ -26,6 +26,17 @@ void init_LED() {
 	FPTB->PSOR = PORTB_LED_BLUE_MASK;
 }
 
+int (led_offsets)[] = {
+	(&(FPTB->PSOR))-(uint32_t *)FPTB, // 0b000
+	(&(FPTB->PCOR))-(uint32_t *)FPTB, // 0b001
+	(&(FPTB->PCOR))-(uint32_t *)FPTB, // 0b010
+	0,                                // 0b011
+	(&(FPTB->PCOR))-(uint32_t *)FPTB, // 0b100
+};
+
 void set_LED(char rgb) {
-	
+	FPTB->PSOR = PORTB_LED_BLUE_MASK;
+	*((int *) FPTB+led_offsets[rgb&0x4]) = PORTB_LED_RED_MASK;
+	*((int *) FPTB+led_offsets[rgb&0x2]) = PORTB_LED_GREEN_MASK;
+	*((int *) FPTB+led_offsets[rgb&0x1]) = PORTB_LED_BLUE_MASK;
 }
