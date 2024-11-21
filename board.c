@@ -580,7 +580,7 @@ void for_each_pseudolegal(Board *b, void f(int i, Move m)) {
 					m.destination_rank = dr;
 					
 					// Pawns must promote when they reach the end
-					if (dr == (b->current_turn==White)?7:0) {
+					if (dr == (b->current_turn==White?7:0)) {
 						for (m.promotion = Knight; m.promotion <= Queen; m.promotion++) {
 							if (is_pseudolegal(b, &m)) { f(i++,m); }
 						}
