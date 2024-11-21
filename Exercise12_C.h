@@ -65,6 +65,8 @@ void make_move(Board *b, Move *m);
 void make_unmove(Board *b);
 void for_each_pseudolegal(Board *b, void f(int i, Move m));
 void for_each_legal(Board *b, void f(int i, Move m));
+unsigned short evaluate(Board *b);
+
 Move random_move(Board *b);
 unsigned int random(void);
 

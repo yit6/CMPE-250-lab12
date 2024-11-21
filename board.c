@@ -7,7 +7,7 @@
 #define R + 500
 #define Q + 900
 
-const unsigned short pawns[6][8][8] = 
+const unsigned short piece_square[6][8][8] = 
 {
 	0 P,  0 P,  0 P,  0 P,  0 P,  0 P,  0 P,  0 P,
 	50 P, 50 P, 50 P, 50 P, 50 P, 50 P, 50 P, 50 P,
@@ -52,7 +52,16 @@ const unsigned short pawns[6][8][8] =
 	0 Q,  0 Q,  5 Q,  5 Q,  5 Q,  5 Q,  0 Q, -5 Q,
 	-10 Q,  5 Q,  5 Q,  5 Q,  5 Q,  5 Q,  0 Q,-10 Q,
 	-10 Q,  0 Q,  5 Q,  0 Q,  0 Q,  0 Q,  0 Q,-10 Q,
-	-20 Q,-10 Q,-10 Q, -5 Q, -5 Q,-10 Q,-10 Q,-20 Q
+	-20 Q,-10 Q,-10 Q, -5 Q, -5 Q,-10 Q,-10 Q,-20 Q,
+	
+	-30,-40,-40,-50,-50,-40,-40,-30,
+	-30,-40,-40,-50,-50,-40,-40,-30,
+	-30,-40,-40,-50,-50,-40,-40,-30,
+	-30,-40,-40,-50,-50,-40,-40,-30,
+	-20,-30,-30,-40,-40,-30,-30,-20,
+	-10,-20,-20,-20,-20,-20,-20,-10,
+	20, 20,  0,  0,  0,  0, 20, 20,
+	20, 30, 10,  0,  0, 10, 30, 20
 };
 
 void new_board(Board *b) {
@@ -631,4 +640,18 @@ void _random_move_helper(int i, Move m) {
 Move random_move(Board *b) {
 	for_each_legal(b, _random_move_helper);
 	return _random_move;
+}
+
+unsigned short evaluate(Board *b) {
+	int i;
+	int j;
+	unsigned short total;
+	for(i = 0; i < 8; i++) {
+		for(j = 0; j < 8; j++) {
+			Piece p = b->board[i][j];
+			int realRank = i ^ ((p.color << 3) - p.color);
+			total += piece_square[p.type + 1][realRank][j];
+		}
+	}
+	return total;
 }
