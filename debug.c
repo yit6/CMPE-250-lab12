@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include "Exercise12_C.h"
 
-unsigned long long _perft_num;
-unsigned long long _perft_subtotal;
+unsigned int _perft_num;
+unsigned int _perft_subtotal;
 int _perft_depth;
 int _perft_subtotal_level;
 Board *_perft_board;
@@ -21,9 +21,13 @@ void _perft_helper(int i, Move m) {
 	make_unmove(_perft_board);
 		
 	if (_perft_depth == _perft_subtotal_level) {
+		unsigned int skib = _perft_num - _perft_subtotal;
 		print_move(&m);
-		sprintf(_perft_sb, ": %lld\r\n", _perft_num-_perft_subtotal);
+		sprintf(_perft_sb, ": %u \r\n", skib);
 		PutStringSB(_perft_sb, 255);
+		//what the fuck is going on here
+		PutNumHex(skib);
+		PutStringSB("\r",255);
 		_perft_subtotal = _perft_num;
 	}
 	
