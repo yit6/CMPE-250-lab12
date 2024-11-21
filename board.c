@@ -218,9 +218,6 @@ char is_pseudolegal(Board *b, Move *m) {
 	Piece piece = b->board[m->soure_rank][m->soure_file];
 	Piece target = b->board[m->destination_rank][m->destination_file];
 	
-	// Can't move nothing
-	if (piece.type == None) { return 0; }
-	
 	// Can't move opponents piece
 	if (piece.color != b->current_turn) { return 0; }
 	
@@ -231,7 +228,6 @@ char is_pseudolegal(Board *b, Move *m) {
 	if (m->promotion != None) {
 		
 		// Make sure promotion type is allowed
-		if (m->promotion == None) { return 0; }
 		if (m->promotion == Pawn) { return 0; }
 		if (m->promotion == King) { return 0; }
 		
