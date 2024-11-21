@@ -227,9 +227,6 @@ char is_pseudolegal(Board *b, Move *m) {
 	Piece piece = b->board[m->soure_rank][m->soure_file];
 	Piece target = b->board[m->destination_rank][m->destination_file];
 	
-	// Can't move nothing
-	if (piece.type == None) { return 0; }
-	
 	// Can't move opponents piece
 	if (piece.color != b->current_turn) { return 0; }
 	
@@ -240,7 +237,6 @@ char is_pseudolegal(Board *b, Move *m) {
 	if (m->promotion != None) {
 		
 		// Make sure promotion type is allowed
-		if (m->promotion == None) { return 0; }
 		if (m->promotion == Pawn) { return 0; }
 		if (m->promotion == King) { return 0; }
 		
@@ -458,11 +454,26 @@ void make_move(Board *b, Move *m) {
 	}
 	
 	// Remove castling rights on rook move
-	if (b->board[m->soure_rank][m->soure_file].type == Rook) {
-		if (m->soure_file == 0 && m->soure_rank == 0) { b->castling_rights.white_queenside = 0; }
-		if (m->soure_file == 7 && m->soure_rank == 0) { b->castling_rights.white_kingside  = 0; }
-		if (m->soure_file == 0 && m->soure_rank == 7) { b->castling_rights.black_queenside = 0; }
-		if (m->soure_file == 7 && m->soure_rank == 7) { b->castling_rights.black_kingside  = 0; }
+	if (m->soure_file == 0 && m->soure_rank == 0) { b->castling_rights.white_queenside = 0; }
+	if (m->soure_file == 7 && m->soure_rank == 0) { b->castling_rights.white_kingside  = 0; }
+	if (m->soure_file == 0 && m->soure_rank == 7) { b->castling_rights.black_queenside = 0; }
+	if (m->soure_file == 7 && m->soure_rank == 7) { b->castling_rights.black_kingside  = 0; }
+	
+	// Remove castling rights if rook captured
+	if (m->destination_file == 0 && m->destination_rank == 0) { b->castling_rights.white_queenside = 0; }
+	if (m->destination_file == 7 && m->destination_rank == 0) { b->castling_rights.white_kingside  = 0; }
+	if (m->destination_file == 0 && m->destination_rank == 7) { b->castling_rights.black_queenside = 0; }
+	if (m->destination_file == 7 && m->destination_rank == 7) { b->castling_rights.black_kingside  = 0; }
+	
+	// Remove castling rights on king move
+	if (b->board[m->soure_rank][m->soure_file].type == King) {
+		if (b->current_turn == Black) {
+			b->castling_rights.white_queenside = 0;
+			b->castling_rights.white_kingside = 0;
+		} else {
+			b->castling_rights.black_queenside = 0;
+			b->castling_rights.black_kingside = 0;
+		}
 	}
 	
 	// Castling
@@ -496,6 +507,11 @@ void make_move(Board *b, Move *m) {
 		}
 	}
 	b->board[m->destination_rank][m->destination_file] = b->board[m->soure_rank][m->soure_file];
+	
+	if (m->promotion != None) {
+		b->board[m->destination_rank][m->destination_file].type = m->promotion;
+	}
+	
 	b->board[m->soure_rank][m->soure_file].type = None;
 }
 
@@ -514,6 +530,10 @@ void make_unmove(Board *b) {
 	
 	b->board[m.soure_rank][m.soure_file] = b->board[m.destination_rank][m.destination_file];
 	b->board[m.destination_rank][m.destination_file] = hist.captured;
+	
+	if (m.promotion != None) {
+		b->board[m.soure_rank][m.soure_file].type = Pawn;
+	}
 	
 	// En passant
 	if (b->board[m.soure_rank][m.soure_file].type == Pawn && m.destination_file == hist.en_pas_file && m.destination_rank == (b->current_turn==White?5:2)) {
@@ -576,7 +596,7 @@ void for_each_pseudolegal(Board *b, void f(int i, Move m)) {
 					m.destination_rank = dr;
 					
 					// Pawns must promote when they reach the end
-					if (dr == (b->current_turn==White)?7:0) {
+					if (dr == (b->current_turn==White?7:0)) {
 						for (m.promotion = Knight; m.promotion <= Queen; m.promotion++) {
 							if (is_pseudolegal(b, &m)) { f(i++,m); }
 						}
