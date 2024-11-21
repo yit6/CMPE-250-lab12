@@ -246,6 +246,9 @@ char is_pseudolegal(Board *b, Move *m) {
 				// Make sure source and destination rank are correct
 				if (m->destination_rank != m->soure_rank || m->destination_rank != (b->current_turn==White?0:7)) { return 0; }
 				
+				// Cannot capture with castle
+				if (b->board[m->destination_rank][m->destination_file].type != None) { return 0; }
+				
 				// Make sure the rights are still there
 				if (m->destination_file == 6 && b->current_turn == White && !b->castling_rights.white_kingside)  { return 0; }
 				if (m->destination_file == 2 && b->current_turn == White && !b->castling_rights.white_queenside) { return 0; }
