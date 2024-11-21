@@ -460,6 +460,17 @@ void make_move(Board *b, Move *m) {
 	if (m->destination_file == 0 && m->destination_rank == 7) { b->castling_rights.black_queenside = 0; }
 	if (m->destination_file == 7 && m->destination_rank == 7) { b->castling_rights.black_kingside  = 0; }
 	
+	// Remove castling rights on king move
+	if (b->board[m->soure_rank][m->soure_file].type == King) {
+		if (b->current_turn == Black) {
+			b->castling_rights.white_queenside = 0;
+			b->castling_rights.white_kingside = 0;
+		} else {
+			b->castling_rights.black_queenside = 0;
+			b->castling_rights.black_kingside = 0;
+		}
+	}
+	
 	// Castling
 	if (b->board[m->soure_rank][m->soure_file].type == King && m->soure_file == 4 && (m->destination_file == 2 || m->destination_file == 6)) {
 		if (m->destination_file == 6 && m->destination_rank == 0) {
