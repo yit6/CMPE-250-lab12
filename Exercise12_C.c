@@ -43,9 +43,7 @@ int main (void) {
 	init_LED();
 	
   __asm("CPSIE   I");
-	
-	set_LED(0x6);
-	
+		
 	//new_board(&b);
 	from_fen(&b, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
 
@@ -94,5 +92,7 @@ int main (void) {
 		}
 		
 		make_move(&b, &m);
+		
+		set_LED(b.current_turn);
 	}
 }

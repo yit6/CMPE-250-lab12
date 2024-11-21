@@ -35,7 +35,6 @@ int (led_offsets)[] = {
 };
 
 void set_LED(char rgb) {
-	FPTB->PSOR = PORTB_LED_BLUE_MASK;
 	*((int *) FPTB+led_offsets[rgb&0x4]) = PORTB_LED_RED_MASK;
 	*((int *) FPTB+led_offsets[rgb&0x2]) = PORTB_LED_GREEN_MASK;
 	*((int *) FPTB+led_offsets[rgb&0x1]) = PORTB_LED_BLUE_MASK;
