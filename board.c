@@ -351,8 +351,11 @@ char is_legal(Board *b, Move *m) {
 	}
 	
 	
-	// Can't castle through check
+	// Can't castle through check or out of check
 	if (b->board[m->soure_rank][m->soure_file].type == King && m->soure_file == 4 && (m->destination_file == 2 || m->destination_file == 6)) {
+		if (is_check(b)) {
+			return 0;
+		}
 		if (is_attacked(b, b->current_turn^1, m->soure_rank, (m->soure_file+m->destination_file)/2)) {
 			return 0;
 		}
@@ -386,6 +389,14 @@ void make_move(Board *b, Move *m) {
 	
 	if (b->board[m->soure_rank][m->soure_file].type == Pawn && abs(m->destination_rank-m->soure_rank) == 2) {
 		b->en_pas_file = m->soure_file;
+	}
+	
+	// Remove castling rights on rook move
+	if (b->board[m->soure_rank][m->soure_file].type == Rook) {
+		if (m->soure_file == 0 && m->soure_rank == 0) { b->castling_rights.white_queenside = 0; }
+		if (m->soure_file == 7 && m->soure_rank == 0) { b->castling_rights.white_kingside  = 0; }
+		if (m->soure_file == 0 && m->soure_rank == 7) { b->castling_rights.black_queenside = 0; }
+		if (m->soure_file == 7 && m->soure_rank == 7) { b->castling_rights.black_kingside  = 0; }
 	}
 	
 	// Castling
