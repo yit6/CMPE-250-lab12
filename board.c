@@ -449,12 +449,16 @@ void make_move(Board *b, Move *m) {
 	}
 	
 	// Remove castling rights on rook move
-	if (b->board[m->soure_rank][m->soure_file].type == Rook) {
-		if (m->soure_file == 0 && m->soure_rank == 0) { b->castling_rights.white_queenside = 0; }
-		if (m->soure_file == 7 && m->soure_rank == 0) { b->castling_rights.white_kingside  = 0; }
-		if (m->soure_file == 0 && m->soure_rank == 7) { b->castling_rights.black_queenside = 0; }
-		if (m->soure_file == 7 && m->soure_rank == 7) { b->castling_rights.black_kingside  = 0; }
-	}
+	if (m->soure_file == 0 && m->soure_rank == 0) { b->castling_rights.white_queenside = 0; }
+	if (m->soure_file == 7 && m->soure_rank == 0) { b->castling_rights.white_kingside  = 0; }
+	if (m->soure_file == 0 && m->soure_rank == 7) { b->castling_rights.black_queenside = 0; }
+	if (m->soure_file == 7 && m->soure_rank == 7) { b->castling_rights.black_kingside  = 0; }
+	
+	// Remove castling rights if rook captured
+	if (m->destination_file == 0 && m->destination_rank == 0) { b->castling_rights.white_queenside = 0; }
+	if (m->destination_file == 7 && m->destination_rank == 0) { b->castling_rights.white_kingside  = 0; }
+	if (m->destination_file == 0 && m->destination_rank == 7) { b->castling_rights.black_queenside = 0; }
+	if (m->destination_file == 7 && m->destination_rank == 7) { b->castling_rights.black_kingside  = 0; }
 	
 	// Castling
 	if (b->board[m->soure_rank][m->soure_file].type == King && m->soure_file == 4 && (m->destination_file == 2 || m->destination_file == 6)) {
