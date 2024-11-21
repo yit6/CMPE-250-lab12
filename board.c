@@ -491,6 +491,11 @@ void make_move(Board *b, Move *m) {
 		}
 	}
 	b->board[m->destination_rank][m->destination_file] = b->board[m->soure_rank][m->soure_file];
+	
+	if (m->promotion != None) {
+		b->board[m->destination_rank][m->destination_file].type = m->promotion;
+	}
+	
 	b->board[m->soure_rank][m->soure_file].type = None;
 }
 
@@ -509,6 +514,10 @@ void make_unmove(Board *b) {
 	
 	b->board[m.soure_rank][m.soure_file] = b->board[m.destination_rank][m.destination_file];
 	b->board[m.destination_rank][m.destination_file] = hist.captured;
+	
+	if (m.promotion != None) {
+		b->board[m.soure_rank][m.soure_file].type = Pawn;
+	}
 	
 	// En passant
 	if (b->board[m.soure_rank][m.soure_file].type == Pawn && m.destination_file == hist.en_pas_file && m.destination_rank == (b->current_turn==White?5:2)) {
