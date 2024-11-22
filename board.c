@@ -342,8 +342,7 @@ char is_pseudolegal(Board *b, Move *m) {
 
 // Return if the piece at rank,file is in the mask
 char is_attacked_helper(Board *b, Color color, char rank, char file, char mask) {
-	if (0xF8 & rank) { return 0; }
-	if (0xF8 & file) { return 0; }
+	if (0xF8 & (rank|file)) { return 0; }
 	
 	if (b->board[rank][file].color != color) { return 0; }
 	
@@ -353,25 +352,7 @@ char is_attacked_helper(Board *b, Color color, char rank, char file, char mask) 
 char is_attacked(Board *b, Color color, char rank, char file) {
 	
 	int r,f;
-	
-	if (is_attacked_helper(b, color, rank-1, file-1, (color==White?KING_MASK|PAWN_MASK:KING_MASK))) { return 1; }
-	if (is_attacked_helper(b, color, rank-1, file  , KING_MASK))                                    { return 1; }
-	if (is_attacked_helper(b, color, rank-1, file+1, (color==White?KING_MASK|PAWN_MASK:KING_MASK))) { return 1; }
-	if (is_attacked_helper(b, color, rank  , file-1, KING_MASK))                                    { return 1; }
-	if (is_attacked_helper(b, color, rank  , file+1, KING_MASK))                                    { return 1; }
-	if (is_attacked_helper(b, color, rank+1, file-1, (color==Black?KING_MASK|PAWN_MASK:KING_MASK))) { return 1; }
-	if (is_attacked_helper(b, color, rank  , file  , KING_MASK))                                    { return 1; }
-	if (is_attacked_helper(b, color, rank+1, file+1, (color==Black?KING_MASK|PAWN_MASK:KING_MASK))) { return 1; }
-	
-	if (is_attacked_helper(b, color, rank+2, file+1, KNIGHT_MASK)) { return 1; }
-	if (is_attacked_helper(b, color, rank+2, file-1, KNIGHT_MASK)) { return 1; }
-	if (is_attacked_helper(b, color, rank-2, file+1, KNIGHT_MASK)) { return 1; }
-	if (is_attacked_helper(b, color, rank-2, file-1, KNIGHT_MASK)) { return 1; }
-	if (is_attacked_helper(b, color, rank+1, file+2, KNIGHT_MASK)) { return 1; }
-	if (is_attacked_helper(b, color, rank+1, file-2, KNIGHT_MASK)) { return 1; }
-	if (is_attacked_helper(b, color, rank-1, file+2, KNIGHT_MASK)) { return 1; }
-	if (is_attacked_helper(b, color, rank-1, file-2, KNIGHT_MASK)) { return 1; }
-	
+		
 	// Orthogonal
 	for (r = rank+1; !(r&0xF8); r++) {
 		if (b->board[r][file].type == None) { continue; }
@@ -398,29 +379,47 @@ char is_attacked(Board *b, Color color, char rank, char file) {
 	}
 	
 	// Diagonal
-	for (r = rank+1, f = file+1; !(r&0xF8) && !(f&0xF8); r++, f++) {
+	for (r = rank+1, f = file+1; !((r|f)&0xF8); r++, f++) {
 		if (b->board[r][f].type == None) { continue; }
 		if (is_attacked_helper(b, color, r, f, BISHOP_MASK | QUEEN_MASK)) { return 1; }
 		break;
 	}
 	
-	for (r = rank+1, f = file-1; !(r&0xF8) && !(f&0xF8); r++, f--) {
+	for (r = rank+1, f = file-1; !((r|f)&0xF8); r++, f--) {
 		if (b->board[r][f].type == None) { continue; }
 		if (is_attacked_helper(b, color, r, f, BISHOP_MASK | QUEEN_MASK)) { return 1; }
 		break;
 	}
 	
-	for (r = rank-1, f = file+1; !(r&0xF8) && !(f&0xF8); r--, f++) {
+	for (r = rank-1, f = file+1; !((r|f)&0xF8); r--, f++) {
 		if (b->board[r][f].type == None) { continue; }
 		if (is_attacked_helper(b, color, r, f, BISHOP_MASK | QUEEN_MASK)) { return 1; }
 		break;
 	}
 	
-	for (r = rank-1, f = file-1; !(r&0xF8) && !(f&0xF8); r--, f--) {
+	for (r = rank-1, f = file-1; !((r|f)&0xF8); r--, f--) {
 		if (b->board[r][f].type == None) { continue; }
 		if (is_attacked_helper(b, color, r, f, BISHOP_MASK | QUEEN_MASK)) { return 1; }
 		break;
 	}
+	
+	if (is_attacked_helper(b, color, rank-1, file-1, (color==White?KING_MASK|PAWN_MASK:KING_MASK))) { return 1; }
+	if (is_attacked_helper(b, color, rank-1, file  , KING_MASK))                                    { return 1; }
+	if (is_attacked_helper(b, color, rank-1, file+1, (color==White?KING_MASK|PAWN_MASK:KING_MASK))) { return 1; }
+	if (is_attacked_helper(b, color, rank  , file-1, KING_MASK))                                    { return 1; }
+	if (is_attacked_helper(b, color, rank  , file+1, KING_MASK))                                    { return 1; }
+	if (is_attacked_helper(b, color, rank+1, file-1, (color==Black?KING_MASK|PAWN_MASK:KING_MASK))) { return 1; }
+	if (is_attacked_helper(b, color, rank  , file  , KING_MASK))                                    { return 1; }
+	if (is_attacked_helper(b, color, rank+1, file+1, (color==Black?KING_MASK|PAWN_MASK:KING_MASK))) { return 1; }
+	
+	if (is_attacked_helper(b, color, rank+2, file+1, KNIGHT_MASK)) { return 1; }
+	if (is_attacked_helper(b, color, rank+2, file-1, KNIGHT_MASK)) { return 1; }
+	if (is_attacked_helper(b, color, rank-2, file+1, KNIGHT_MASK)) { return 1; }
+	if (is_attacked_helper(b, color, rank-2, file-1, KNIGHT_MASK)) { return 1; }
+	if (is_attacked_helper(b, color, rank+1, file+2, KNIGHT_MASK)) { return 1; }
+	if (is_attacked_helper(b, color, rank+1, file-2, KNIGHT_MASK)) { return 1; }
+	if (is_attacked_helper(b, color, rank-1, file+2, KNIGHT_MASK)) { return 1; }
+	if (is_attacked_helper(b, color, rank-1, file-2, KNIGHT_MASK)) { return 1; }
 	
 	return 0;
 }
