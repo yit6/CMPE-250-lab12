@@ -340,15 +340,16 @@ char is_pseudolegal(Board *b, Move *m) {
 #define QUEEN_MASK 0x20
 #define KING_MASK 0x40
 
-// Return if the piece at rank,file is in the mask
+// Return if the piece at rank,file is in the mask and the specified color
 char is_attacked_helper(Board *b, Color color, char rank, char file, char mask) {
-	if (0xF8 & (rank|file)) { return 0; }
+	if (b->board[rank][file].color != color) { return 0; }	
 	
-	if (b->board[rank][file].color != color) { return 0; }
+	if (0xF8 & (rank|file)) { return 0; }
 	
 	return (1<<b->board[rank][file].type) & mask;
 }
 
+// Return true if the square rank,file is attacked by a peice
 char is_attacked(Board *b, Color color, char rank, char file) {
 	
 	int r,f;
