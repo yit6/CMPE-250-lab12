@@ -642,50 +642,167 @@ void for_each_pseudolegal(Board *b, void f(int i, Move m)) {
 			
 			m.soure_file = sf;
 			m.soure_rank = sr;
+			m.promotion = None;
 			
-			// Special logic for pawns
-			if (b->board[sr][sf].type == Pawn) {
+			switch (b->board[sr][sf].type) {
+				case None:
+					break;
+				case Pawn:
 				
-				// Pawns can only move one rank
-				dr = sr + (b->current_turn==White?1:-1);
+					// Pawns can only move one rank
+					dr = sr + (b->current_turn==White?1:-1);
 				
-				// Pawns can move at most one file from where they start
-				for (df = sf-1; df <= sf+1; df++) {
+					// Pawns can move at most one file from where they start
+					for (df = sf-1; df <= sf+1; df++) {
 					
-					m.destination_file = df;
-					m.destination_rank = dr;
-					
-					// Pawns must promote when they reach the end
-					if (dr == (b->current_turn==White?7:0)) {
-						for (m.promotion = Knight; m.promotion <= Queen; m.promotion++) {
-							if (is_pseudolegal(b, &m)) { f(i++,m); }
-						}
-					} else {
-						m.promotion = None;						
-						if (is_pseudolegal(b, &m)) { f(i++,m); }
-					}	
-				}
-				
-				if (sr == (b->current_turn==White?1:6)) {
-					m.destination_rank = sr + (b->current_turn==White?2:-2);
-					m.destination_file = sf;
-					m.promotion = None;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
-				}
-			} else {
-			
-				// Pieces don't promote
-				m.promotion = None;
-			
-				// Try every square
-				// TODO: don't
-				for (dr = 0; dr < 8; dr++) {
-					for (df = 0; df < 8; df++) {
 						m.destination_file = df;
 						m.destination_rank = dr;
-						if (is_pseudolegal(b, &m)) { f(i++,m); }
+					
+						// Pawns must promote when they reach the end
+						if (dr == (b->current_turn==White?7:0)) {
+							for (m.promotion = Knight; m.promotion <= Queen; m.promotion++) {
+								if (is_pseudolegal(b, &m)) { f(i++,m); }
+							}
+						} else {
+							m.promotion = None;						
+							if (is_pseudolegal(b, &m)) { f(i++,m); }
+						}	
 					}
-				}
+				
+					if (sr == (b->current_turn==White?1:6)) {
+						m.destination_rank = sr + (b->current_turn==White?2:-2);
+						m.destination_file = sf;
+						m.promotion = None;
+						if (is_pseudolegal(b, &m)) { f(i++, m); }
+					}
+					break;
+				case Knight:
+					m.destination_rank = sr+2;
+					m.destination_file = sf+1;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					m.destination_rank = sr-2;
+					m.destination_file = sf+1;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					m.destination_rank = sr+2;
+					m.destination_file = sf-1;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					m.destination_rank = sr-2;
+					m.destination_file = sf-1;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					m.destination_rank = sr+1;
+					m.destination_file = sf+2;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					m.destination_rank = sr-1;
+					m.destination_file = sf+2;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					m.destination_rank = sr+1;
+					m.destination_file = sf-2;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					m.destination_rank = sr-1;
+					m.destination_file = sf-2;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					break;
+				case King:
+					m.destination_rank = sr-1;
+					m.destination_file = sf-1;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					m.destination_file++;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					m.destination_file++;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					
+					m.destination_rank++;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					m.destination_file -= 2;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					
+					m.destination_rank++;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					m.destination_file++;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					m.destination_file++;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					
+					// Test this one, maybe more could cause this
+					if (sf != 4) { break; }
+					m.destination_rank = sr;
+					m.destination_file = sf+2;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					m.destination_file -= 4;
+					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					
+					break;
+				case Queen:
+					m.destination_rank = sr;
+					for (df = sf; df < 8; df++) {
+						m.destination_file = df;
+						if (is_pseudolegal(b, &m)) { f(i++, m); }
+					}
+					m.destination_rank = sr;
+					for (df = sf; df >= 0; df--) {
+						m.destination_file = df;
+						if (is_pseudolegal(b, &m)) { f(i++, m); }
+					}
+					m.destination_file = sf;
+					for (dr = sr; dr < 8; dr++) {
+						m.destination_rank = dr;
+						if (is_pseudolegal(b, &m)) { f(i++, m); }
+					}
+					m.destination_file = sf;
+					for (dr = sr; dr >= 0; dr--) {
+						m.destination_rank = dr;
+						if (is_pseudolegal(b, &m)) { f(i++, m); }
+					}
+					// Reuse bishop for queen's diagonals
+					
+				case Bishop:
+					for (df = sf+1, dr = sr+1; !((df & 0xF8)|(dr & 0xF8)); df++, dr++) {
+						m.destination_file = df;
+						m.destination_rank = dr;
+						if (is_pseudolegal(b, &m)) { f(i++, m); continue; }
+						if (b->board[m.destination_rank][m.destination_file].type != None) { break; }
+					}
+					for (df = sf+1, dr = sr-1; !((df & 0xF8)|(dr & 0xF8)); df++, dr--) {
+						m.destination_file = df;
+						m.destination_rank = dr;
+						if (is_pseudolegal(b, &m)) { f(i++, m); continue; }
+						if (b->board[m.destination_rank][m.destination_file].type != None) { break; }
+					}
+					for (df = sf-1, dr = sr+1; !((df & 0xF8)|(dr & 0xF8)); df--, dr++) {
+						m.destination_file = df;
+						m.destination_rank = dr;
+						if (is_pseudolegal(b, &m)) { f(i++, m); continue; }
+						if (b->board[m.destination_rank][m.destination_file].type != None) { break; }
+					}
+					for (df = sf-1, dr = sr-1; !((df & 0xF8)|(dr & 0xF8)); df--, dr--) {
+						m.destination_file = df;
+						m.destination_rank = dr;
+						if (is_pseudolegal(b, &m)) { f(i++, m); continue; }
+						if (b->board[m.destination_rank][m.destination_file].type != None) { break; }
+					}
+					break;
+				case Rook:
+					m.destination_rank = sr;
+					for (df = sf; df < 8; df++) {
+						m.destination_file = df;
+						if (is_pseudolegal(b, &m)) { f(i++, m); }
+					}
+					m.destination_rank = sr;
+					for (df = sf; df >= 0; df--) {
+						m.destination_file = df;
+						if (is_pseudolegal(b, &m)) { f(i++, m); }
+					}
+					m.destination_file = sf;
+					for (dr = sr; dr < 8; dr++) {
+						m.destination_rank = dr;
+						if (is_pseudolegal(b, &m)) { f(i++, m); }
+					}
+					m.destination_file = sf;
+					for (dr = sr; dr >= 0; dr--) {
+						m.destination_rank = dr;
+						if (is_pseudolegal(b, &m)) { f(i++, m); }
+					}
+					break;
 			}
 		}
 	}
