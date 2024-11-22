@@ -426,47 +426,29 @@ char is_attacked(Board *b, Color color, char rank, char file) {
 }
 
 //checks if either king into check, returns 0 for no check, 1 for white check, 2 for black check, 3 for both
-char is_check(Board *b) {
-	int i;
-	int j;
-	
-	int white_rank = -1;
-	int white_file = -1;
-	int black_rank = -1;
-	int black_file = -1;
-	
-	int checkState = 0;
+char is_check(Board *b, Color c) {
+	char rank,file;
 	
 	//scan for kings
 	
-	for(i = 0; i < 8; i++) {
-		for(j = 0; j < 8; j++) {
-			if(b->board[i][j].type == King) {
-				if(b->board[i][j].color == White) {
-					white_rank = i;
-					white_file = j;
-				} else {
-					black_rank = i;
-					black_file = j;
+	for(rank = 0; rank < 8; rank++) {
+		for(file = 0; file < 8; file++) {
+			if(b->board[rank][file].type == King) {
+				if(b->board[rank][file].color == c) {
+					return is_attacked(b, c^1, rank, file);
 				}
 			}
 		}
 	}
-
-	// check if each piece can move to king
 	
-	checkState |= is_attacked(b, Black, white_rank, white_file);
-	checkState |= is_attacked(b, White, black_rank, black_file) << 1;
-	
-	return checkState;
+	return 0;
 }
 
 // 0 for illegal, 1 for legal
 char is_legal(Board *b, Move *m) {
 	Piece p = b->board[m->soure_rank][m->soure_file];
-	
 	char check;
-	char checkMask = 1 << p.color;
+	
 	char psuedo = is_pseudolegal(b, m);
 	if(!psuedo) {
 		return 0;
@@ -475,7 +457,7 @@ char is_legal(Board *b, Move *m) {
 	
 	// Can't castle through check or out of check
 	if (b->board[m->soure_rank][m->soure_file].type == King && m->soure_file == 4 && (m->destination_file == 2 || m->destination_file == 6)) {
-		if (is_check(b)) {
+		if (is_check(b, b->current_turn)) {
 			return 0;
 		}
 		if (is_attacked(b, b->current_turn^1, m->soure_rank, (m->soure_file+m->destination_file)/2)) {
@@ -484,7 +466,7 @@ char is_legal(Board *b, Move *m) {
 	}
 	
 	make_move(b, m);
-	check = is_check(b) & checkMask;
+	check = is_check(b, b->current_turn^1);
 	make_unmove(b);
 	
 	return check == 0;

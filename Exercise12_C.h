@@ -59,7 +59,7 @@ void from_fen(Board *b, char *fen);
 void print_board(Board *b);
 char is_pseudolegal(Board *b, Move *m);
 char is_attacked(Board *n, Color color, char rank, char file);
-char is_check(Board *b);
+char is_check(Board *b, Color c);
 char is_legal(Board *b, Move *m);
 void make_move(Board *b, Move *m);
 void make_unmove(Board *b);
