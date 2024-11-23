@@ -21,13 +21,12 @@ void _perft_helper(int i, Move m) {
 	make_unmove(_perft_board);
 		
 	if (_perft_depth == _perft_subtotal_level) {
-		unsigned int skib = _perft_num - _perft_subtotal;
+		char c,*s = _perft_sb;
 		print_move(&m);
-		sprintf(_perft_sb, ": %u \r\n", skib);
+		sprintf(_perft_sb, ": %u\r\n", _perft_num-_perft_subtotal);
+		_perft_sb[0] = ':';
+		_perft_sb[1] = ' ';
 		PutStringSB(_perft_sb, 255);
-		//what the fuck is going on here
-		PutNumHex(skib);
-		PutStringSB("\r",255);
 		_perft_subtotal = _perft_num;
 	}
 	

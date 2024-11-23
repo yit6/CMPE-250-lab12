@@ -69,7 +69,7 @@ int main (void) {
 		}
 		if (*move_buffer == 'p') {
 			perft_num = perft(&b, move_buffer[1]-'0');
-			sprintf(perft_print, "%lld nodes.\r\n", perft_num);
+			sprintf(perft_print, "\r\n%lld nodes.\r\n", perft_num);
 			PutStringSB(perft_print, 255);
 			print_board(&b);
 			goto get_input;
@@ -77,12 +77,6 @@ int main (void) {
 		
 		print_move(&m);
 		PutStringSB("\r\n",255);
-		
-		if (is_pseudolegal(&b, &m)) {
-			PutStringSB("Ok!\r\n",255);
-		} else {
-			PutStringSB("Bad!\r\n",255);
-		}
 		
 		if (is_legal(&b, &m)) {
 			PutStringSB("Legal!\r\n",255);

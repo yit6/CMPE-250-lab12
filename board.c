@@ -212,127 +212,6 @@ void print_board(Board *b) {
 	PutStringSB(" to move\r\n",255);
 }
 
-/***
-*
-* This function checks if a move is psuedolegal, meaning that the piece movement is legal, but does not check
-* if the move violates the king being in check.
-*
-* Param b: Board object
-* Param m: Move object
-*
-* Returns: Code representing psuedolegality of move, 0 for illegal, 1 for psuedolegal
-*/
-char is_pseudolegal(Board *b, Move *m) {
-	signed char x, y, dx, dy, sx, sy;
-	
-	Piece piece = b->board[m->soure_rank][m->soure_file];
-	Piece target = b->board[m->destination_rank][m->destination_file];
-	
-	// Can't move opponents piece
-	if (piece.color != b->current_turn) { return 0; }
-	
-	// Piece has to move
-	if (m->soure_file == m->destination_file && m->soure_rank == m->destination_rank) { return 0; }
-	
-	// Check promotion
-	if (m->promotion != None) {
-		
-		// Make sure promotion type is allowed
-		if (m->promotion == Pawn) { return 0; }
-		if (m->promotion == King) { return 0; }
-		
-		// Only pawns can be promoted
-		if (piece.type != Pawn) { return 0; }
-		
-		// Pawns can only promote when they reach the end
-		if (m->destination_rank != (piece.color==White ? 7 : 0)) { return 0; }
-	} else {
-		
-		// Pawns must promote when the reach the end
-		if (piece.type == Pawn && m->destination_rank == (piece.color==White ? 7 : 0)) { return 0; }
-	}
-	
-	// Can't attack own piece
-	if (target.type != None && piece.color == target.color) { return 0; }
-	
-	dx = m->destination_file-m->soure_file;
-	dy = m->destination_rank-m->soure_rank;
-		
-	sx = (dx > 0) - (dx < 0);
-	sy = (dy > 0) - (dy < 0);
-	
-	dx = abs(dx);
-	dy = abs(dy);
-	
-	// Check piece movement, return false if invalid
-	// and true for valid moves for non-sliding pieces
-	switch (piece.type) {
-		case None:
-			return 0;
-		case Pawn:
-			if (dx == 0) {
-				if (target.type != None) { return 0; }
-				if (sy != (piece.color==White?1:-1)) { return 0; }
-				if (dy == 2) {
-					// Can't jump over piece
-					int t = (m->soure_rank+m->destination_rank)/2;
-					return b->board[t][m->soure_file].type == None;
-				}
-				return dy == 1;
-			} else if (dx == 1) {
-				if (target.type == None || target.color == piece.color) {
-					if (m->destination_file != b->en_pas_file || m->destination_rank != (b->current_turn==White?5:2)) { return 0; }
-				}
-				return m->destination_rank-m->soure_rank == ((piece.color==White)?1:-1);
-			} else {
-				return 0;
-			}
-		case Knight:
-			return dx*dx + dy*dy == 5;
-		case Bishop:
-			if (dx != dy && dx != -dy) { return 0; }
-			break;
-		case Rook:
-			if (dx != 0 && dy != 0) { return 0; }
-			break;
-		case Queen:
-			if (dx != 0 && dy != 0 && dx != dy && dx != -dy) { return 0; }
-			break;
-		case King:
-			
-			//	Castling
-			if (m->soure_file==4 && (m->destination_file==2 || m->destination_file==6)) {
-				
-				// Make sure source and destination rank are correct
-				if (m->destination_rank != m->soure_rank || m->destination_rank != (b->current_turn==White?0:7)) { return 0; }
-				
-				// Cannot capture with castle
-				if (b->board[m->destination_rank][m->destination_file].type != None) { return 0; }
-				
-				// Make sure the rights are still there
-				if (m->destination_file == 6 && b->current_turn == White && !b->castling_rights.white_kingside)  { return 0; }
-				if (m->destination_file == 2 && b->current_turn == White && !b->castling_rights.white_queenside) { return 0; }
-				if (m->destination_file == 6 && b->current_turn == Black && !b->castling_rights.black_kingside)  { return 0; }
-				if (m->destination_file == 2 && b->current_turn == Black && !b->castling_rights.black_queenside) { return 0; }
-				
-				// Further checks go in is_legal()
-				if (m->destination_file==2 && b->board[m->destination_rank][1].type != None) { return 0; }
-				return b->board[m->destination_rank][(m->soure_file+m->destination_file)/2].type == None;
-			}
-			
-			return dx < 2 && dy < 2;
-	}
-	
-	// Check sliding pieces
-	
-	for (x = m->soure_file+sx, y = m->soure_rank+sy; x != m->destination_file || y != m->destination_rank; x+=sx,y+=sy) {
-		if (b->board[y][x].type != None) { return 0; }
-	}
-	
-	// Already guarranteed to be attacking valid square, so no further checks needed
-	return 1;
-}
-
 #define PAWN_MASK 0x2
 #define KNIGHT_MASK 0x4
 #define BISHOP_MASK 0x8
@@ -448,23 +327,125 @@ char is_check(Board *b, Color c) {
 char is_legal(Board *b, Move *m) {
 	Piece p = b->board[m->soure_rank][m->soure_file];
 	char check;
+	signed char x, y, dx, dy, sx, sy;
 	
-	char psuedo = is_pseudolegal(b, m);
-	if(!psuedo) {
-		return 0;
+	Piece piece = b->board[m->soure_rank][m->soure_file];
+	Piece target = b->board[m->destination_rank][m->destination_file];
+	
+	// Can't move opponents piece
+	if (piece.color != b->current_turn) { return 0; }
+	
+	// Piece has to move
+	if (m->soure_file == m->destination_file && m->soure_rank == m->destination_rank) { return 0; }
+	
+	// Check promotion
+	if (m->promotion != None) {
+		
+		// Make sure promotion type is allowed
+		if (m->promotion == Pawn) { return 0; }
+		if (m->promotion == King) { return 0; }
+		
+		// Only pawns can be promoted
+		if (piece.type != Pawn) { return 0; }
+		
+		// Pawns can only promote when they reach the end
+		if (m->destination_rank != (piece.color==White ? 7 : 0)) { return 0; }
+	} else {
+		
+		// Pawns must promote when the reach the end
+		if (piece.type == Pawn && m->destination_rank == (piece.color==White ? 7 : 0)) { return 0; }
 	}
 	
+	// Can't attack own piece
+	if (target.type != None && piece.color == target.color) { return 0; }
 	
-	// Can't castle through check or out of check
-	if (b->board[m->soure_rank][m->soure_file].type == King && m->soure_file == 4 && (m->destination_file == 2 || m->destination_file == 6)) {
-		if (is_check(b, b->current_turn)) {
+	dx = m->destination_file-m->soure_file;
+	dy = m->destination_rank-m->soure_rank;
+		
+	sx = (dx > 0) - (dx < 0);
+	sy = (dy > 0) - (dy < 0);
+	
+	dx = abs(dx);
+	dy = abs(dy);
+	
+	// Check piece movement, return false if invalid
+	// and true for valid moves for non-sliding pieces
+	switch (piece.type) {
+		case None:
 			return 0;
-		}
-		if (is_attacked(b, b->current_turn^1, m->soure_rank, (m->soure_file+m->destination_file)/2)) {
-			return 0;
-		}
+		case Pawn:
+			if (dx == 0) {
+				if (target.type != None) { return 0; }
+				if (sy != (piece.color==White?1:-1)) { return 0; }
+				if (dy == 2) {
+					// Can't jump over piece
+					int t = (m->soure_rank+m->destination_rank)/2;
+					if (b->board[t][m->soure_file].type != None) { return 0; }
+					goto post_move_check;
+				}
+				if (dy != 1) { return 0; }
+				goto post_move_check;
+			} else if (dx == 1) {
+				if (target.type == None || target.color == piece.color) {
+					if (m->destination_file != b->en_pas_file || m->destination_rank != (b->current_turn==White?5:2)) { return 0; }
+				}
+				if (m->destination_rank-m->soure_rank != ((piece.color==White)?1:-1)) {return 0; }
+				goto post_move_check;
+			} else {
+				return 0;
+			}
+		case Knight:
+			if (dx*dx + dy*dy != 5) { return 0;}
+			goto post_move_check;
+		case Bishop:
+			if (dx != dy && dx != -dy) { return 0; }
+			break;
+		case Rook:
+			if (dx != 0 && dy != 0) { return 0; }
+			break;
+		case Queen:
+			if (dx != 0 && dy != 0 && dx != dy && dx != -dy) { return 0; }
+			break;
+		case King:
+			
+			//	Castling
+			if (m->soure_file==4 && (m->destination_file==2 || m->destination_file==6)) {
+				
+				// Make sure source and destination rank are correct
+				if (m->destination_rank != m->soure_rank || m->destination_rank != (b->current_turn==White?0:7)) { return 0; }
+				
+				// Cannot capture with castle
+				if (b->board[m->destination_rank][m->destination_file].type != None) { return 0; }
+				
+				// Make sure the rights are still there
+				if (m->destination_file == 6 && b->current_turn == White && !b->castling_rights.white_kingside)  { return 0; }
+				if (m->destination_file == 2 && b->current_turn == White && !b->castling_rights.white_queenside) { return 0; }
+				if (m->destination_file == 6 && b->current_turn == Black && !b->castling_rights.black_kingside)  { return 0; }
+				if (m->destination_file == 2 && b->current_turn == Black && !b->castling_rights.black_queenside) { return 0; }
+				
+				// Further checks go in is_legal()
+				if (m->destination_file==2 && b->board[m->destination_rank][1].type != None) { return 0; }
+				if (b->board[m->destination_rank][(m->soure_file+m->destination_file)/2].type != None) { return 0; }
+				if (is_check(b, b->current_turn)) {
+					return 0;
+				}
+				if (is_attacked(b, b->current_turn^1, m->soure_rank, (m->soure_file+m->destination_file)/2)) {
+					return 0;
+				}
+				goto post_move_check;
+			}
+			
+			if (dx > 1 || dy > 1) { return 0;}
 	}
 	
+	// Check sliding pieces
+	
+	for (x = m->soure_file+sx, y = m->soure_rank+sy; x != m->destination_file || y != m->destination_rank; x+=sx,y+=sy) {
+		if (b->board[y][x].type != None) { return 0; }
+	}	
+	
+	post_move_check:
+		
 	make_move(b, m);
 	check = is_check(b, b->current_turn^1);
 	make_unmove(b);
@@ -608,7 +589,7 @@ void make_unmove(Board *b) {
 	}
 }
 
-void for_each_pseudolegal(Board *b, void f(int i, Move m)) {
+void for_each_legal(Board *b, void f(int i, Move m)) {
 	signed char sf,sr,df,dr,i=0;
 	Move m;
 	
@@ -643,11 +624,11 @@ void for_each_pseudolegal(Board *b, void f(int i, Move m)) {
 						// Pawns must promote when they reach the end
 						if (dr == (b->current_turn==White?7:0)) {
 							for (m.promotion = Knight; m.promotion <= Queen; m.promotion++) {
-								if (is_pseudolegal(b, &m)) { f(i++,m); }
+								if (is_legal(b, &m)) { f(i++,m); }
 							}
 						} else {
 							m.promotion = None;						
-							if (is_pseudolegal(b, &m)) { f(i++,m); }
+							if (is_legal(b, &m)) { f(i++,m); }
 						}	
 					}
 				
@@ -655,85 +636,85 @@ void for_each_pseudolegal(Board *b, void f(int i, Move m)) {
 						m.destination_rank = sr + (b->current_turn==White?2:-2);
 						m.destination_file = sf;
 						m.promotion = None;
-						if (is_pseudolegal(b, &m)) { f(i++, m); }
+						if (is_legal(b, &m)) { f(i++, m); }
 					}
 					break;
 				case Knight:
 					m.destination_rank = sr+2;
 					m.destination_file = sf+1;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					m.destination_rank = sr-2;
 					m.destination_file = sf+1;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					m.destination_rank = sr+2;
 					m.destination_file = sf-1;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					m.destination_rank = sr-2;
 					m.destination_file = sf-1;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					m.destination_rank = sr+1;
 					m.destination_file = sf+2;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					m.destination_rank = sr-1;
 					m.destination_file = sf+2;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					m.destination_rank = sr+1;
 					m.destination_file = sf-2;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					m.destination_rank = sr-1;
 					m.destination_file = sf-2;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					break;
 				case King:
 					m.destination_rank = sr-1;
 					m.destination_file = sf-1;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					m.destination_file++;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					m.destination_file++;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					
 					m.destination_rank++;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					m.destination_file -= 2;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					
 					m.destination_rank++;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					m.destination_file++;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					m.destination_file++;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					
 					// Test this one, maybe more could cause this
 					if (sf != 4) { break; }
 					m.destination_rank = sr;
 					m.destination_file = sf+2;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					m.destination_file -= 4;
-					if (is_pseudolegal(b, &m)) { f(i++, m); }
+					if (is_legal(b, &m)) { f(i++, m); }
 					
 					break;
 				case Queen:
 					m.destination_rank = sr;
 					for (df = sf; df < 8; df++) {
 						m.destination_file = df;
-						if (is_pseudolegal(b, &m)) { f(i++, m); }
+						if (is_legal(b, &m)) { f(i++, m); }
 					}
 					m.destination_rank = sr;
 					for (df = sf; df >= 0; df--) {
 						m.destination_file = df;
-						if (is_pseudolegal(b, &m)) { f(i++, m); }
+						if (is_legal(b, &m)) { f(i++, m); }
 					}
 					m.destination_file = sf;
 					for (dr = sr; dr < 8; dr++) {
 						m.destination_rank = dr;
-						if (is_pseudolegal(b, &m)) { f(i++, m); }
+						if (is_legal(b, &m)) { f(i++, m); }
 					}
 					m.destination_file = sf;
 					for (dr = sr; dr >= 0; dr--) {
 						m.destination_rank = dr;
-						if (is_pseudolegal(b, &m)) { f(i++, m); }
+						if (is_legal(b, &m)) { f(i++, m); }
 					}
 					// Reuse bishop for queen's diagonals
 					
@@ -741,25 +722,25 @@ void for_each_pseudolegal(Board *b, void f(int i, Move m)) {
 					for (df = sf+1, dr = sr+1; !((df & 0xF8)|(dr & 0xF8)); df++, dr++) {
 						m.destination_file = df;
 						m.destination_rank = dr;
-						if (is_pseudolegal(b, &m)) { f(i++, m); continue; }
+						if (is_legal(b, &m)) { f(i++, m); continue; }
 						if (b->board[m.destination_rank][m.destination_file].type != None) { break; }
 					}
 					for (df = sf+1, dr = sr-1; !((df & 0xF8)|(dr & 0xF8)); df++, dr--) {
 						m.destination_file = df;
 						m.destination_rank = dr;
-						if (is_pseudolegal(b, &m)) { f(i++, m); continue; }
+						if (is_legal(b, &m)) { f(i++, m); continue; }
 						if (b->board[m.destination_rank][m.destination_file].type != None) { break; }
 					}
 					for (df = sf-1, dr = sr+1; !((df & 0xF8)|(dr & 0xF8)); df--, dr++) {
 						m.destination_file = df;
 						m.destination_rank = dr;
-						if (is_pseudolegal(b, &m)) { f(i++, m); continue; }
+						if (is_legal(b, &m)) { f(i++, m); continue; }
 						if (b->board[m.destination_rank][m.destination_file].type != None) { break; }
 					}
 					for (df = sf-1, dr = sr-1; !((df & 0xF8)|(dr & 0xF8)); df--, dr--) {
 						m.destination_file = df;
 						m.destination_rank = dr;
-						if (is_pseudolegal(b, &m)) { f(i++, m); continue; }
+						if (is_legal(b, &m)) { f(i++, m); continue; }
 						if (b->board[m.destination_rank][m.destination_file].type != None) { break; }
 					}
 					break;
@@ -767,45 +748,27 @@ void for_each_pseudolegal(Board *b, void f(int i, Move m)) {
 					m.destination_rank = sr;
 					for (df = sf; df < 8; df++) {
 						m.destination_file = df;
-						if (is_pseudolegal(b, &m)) { f(i++, m); }
+						if (is_legal(b, &m)) { f(i++, m); }
 					}
 					m.destination_rank = sr;
 					for (df = sf; df >= 0; df--) {
 						m.destination_file = df;
-						if (is_pseudolegal(b, &m)) { f(i++, m); }
+						if (is_legal(b, &m)) { f(i++, m); }
 					}
 					m.destination_file = sf;
 					for (dr = sr; dr < 8; dr++) {
 						m.destination_rank = dr;
-						if (is_pseudolegal(b, &m)) { f(i++, m); }
+						if (is_legal(b, &m)) { f(i++, m); }
 					}
 					m.destination_file = sf;
 					for (dr = sr; dr >= 0; dr--) {
 						m.destination_rank = dr;
-						if (is_pseudolegal(b, &m)) { f(i++, m); }
+						if (is_legal(b, &m)) { f(i++, m); }
 					}
 					break;
 			}
 		}
 	}
-}
-
-Board *_fe_helper_board;
-int _fe_count;
-void (*_fe_helper_f)(int i, Move m);
-
-void _fe_helper(int i, Move m) {
-	if (is_legal(_fe_helper_board, &m)) {
-		_fe_helper_f(_fe_count++, m);
-	}
-}
-
-void for_each_legal(Board *b, void f(int i, Move m)) {
-	_fe_helper_board = b;
-	_fe_helper_f = f;
-	_fe_count = 0;
-	
-	for_each_pseudolegal(b, _fe_helper);
 }
 
 Move _random_move;
