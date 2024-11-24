@@ -75,6 +75,13 @@ int main (void) {
 			print_board(&b);
 			goto get_input;
 		}
+		if (*move_buffer == 'm') {
+			Move engine_move = best_move(&b);
+			print_move(&engine_move);
+			make_move(&b,&engine_move);
+			PutStringSB("\r\n",255);
+			continue;
+		}
 		
 		print_move(&m);
 		puts("\r\n");

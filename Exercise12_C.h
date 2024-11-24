@@ -75,6 +75,8 @@ void print_move(Move *m);
 
 unsigned long long perft(Board *b, int depth);
 
+Move best_move(Board *b);
+
 #define EXERCISE_12_C (1)
 
 typedef int Int32;

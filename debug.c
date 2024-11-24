@@ -21,7 +21,6 @@ void _perft_helper(int i, Move m) {
 	make_unmove(_perft_board);
 		
 	if (_perft_depth == _perft_subtotal_level) {
-		char c,*s = _perft_sb;
 		print_move(&m);
 		sprintf(_perft_sb, ": %u\r\n", _perft_num - _perft_subtotal);
 		_perft_sb[0] = ':';
