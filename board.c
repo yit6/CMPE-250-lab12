@@ -792,7 +792,7 @@ short evaluate(Board *b) {
 		for(j = 0; j < 8; j++) {
 			Piece p = b->board[i][j];
 			int realRank = i ^ ((p.color << 3) - p.color);
-			total += (piece_square[p.type + 1][realRank][j] ^ (0 - p.color)) - p.color;
+			total += (piece_square[p.type + 1][realRank][j] ^ (0 - p.color)) + p.color;
 		}
 	}
 	return total;
