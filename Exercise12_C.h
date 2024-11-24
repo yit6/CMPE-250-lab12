@@ -1,3 +1,5 @@
+#define puts(str) PutStringSB(str, 255)
+
 typedef enum piece_type {
 	None=0,
 	Pawn,

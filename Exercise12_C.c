@@ -9,18 +9,19 @@
 /*            November 11, 2024                                      */
 /*********************************************************************/
 #include "MKL05Z4.h"
-#include "Exercise12_C.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "Exercise12_C.h"
 
 Board b;
 
 void print_moves(int i, Move m) {
 	PutNumHex(i);
-	PutStringSB(":	",255);
+	puts(":	");
 	print_move(&m);
-	PutStringSB("\r\n",255);
+	puts("\r\n");
 }
 
 unsigned int seed = 1;
@@ -61,29 +62,29 @@ int main (void) {
 		}
 		if (*move_buffer == 'r') {
 			m = random_move(&b);
-			PutStringSB("Doing: ",255);
+			puts("Doing: ");
 			print_move(&m);
-			PutStringSB("\r\n",255);
+			puts("\r\n");
 			make_move(&b, &m);
 			continue;
 		}
 		if (*move_buffer == 'p') {
 			perft_num = perft(&b, move_buffer[1]-'0');
 			sprintf(perft_print, "\r\n%lld nodes.\r\n", perft_num);
-			PutStringSB(perft_print, 255);
+			puts(perft_print);
 			print_board(&b);
 			goto get_input;
 		}
 		
 		print_move(&m);
-		PutStringSB("\r\n",255);
+		puts("\r\n");
 		
 		if (is_legal(&b, &m)) {
 			UInt8 ledMask = ((b.current_turn << 1) ^ GREEN_MASK) | ((b.current_turn) & BLUE_MASK); // only blue mask if users turn, only green mask if engines turn
-			PutStringSB("Legal!\r\n",255);
+			puts("Legal!\r\n");
 			set_LED(ledMask);
 		} else {
-			PutStringSB("Not Legal!\r\n",255);
+			puts("Not Legal!\r\n");
 			set_LED(RED_MASK);
 			goto get_input;
 		}

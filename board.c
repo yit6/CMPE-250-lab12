@@ -179,8 +179,8 @@ void print_board(Board *b) {
 	char divider[] = "|\r\n  +---+---+---+---+---+---+---+---+\r\n8 ";
 	char files[] = "    a   b   c   d   e   f   g   h\r\n";
 	
-	PutStringSB(files,255);
-	PutStringSB(divider+3,255);
+	puts(files);
+	puts(divider+3);
 	
 	for (rank = 7; rank >= 0; rank--) {
 		for (file = 0; file < 8; file++) {
@@ -199,17 +199,17 @@ void print_board(Board *b) {
 			PutStringSB(c,4);
 		}
 		divider[40] = " 1234567"[rank];
-		PutStringSB(divider,255);
+		puts(divider);
 	}
-	PutStringSB(files+2,255);
+	puts(files+2);
 	
 	//if (b->castling_rights.white_kingside)  { PutChar('K'); }
 	//if (b->castling_rights.white_queenside) { PutChar('Q'); }
 	//if (b->castling_rights.black_kingside)  { PutChar('k'); }
 	//if (b->castling_rights.black_queenside) { PutChar('q'); }	
 	
-	PutStringSB(b->current_turn==White?"White":"Black",255);
-	PutStringSB(" to move\r\n",255);
+	puts(b->current_turn==White?"White":"Black");
+	puts(" to move\r\n");
 }
 
 #define PAWN_MASK 0x2
