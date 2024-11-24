@@ -221,7 +221,7 @@ void print_board(Board *b) {
 
 // Return if the piece at rank,file is in the mask and the specified color
 char is_attacked_helper(Board *b, Color color, char rank, char file, char mask) {
-	if (b->board[rank][file].color != color) { return 0; }	
+	if (b->board[rank][file].color != color) { return 0; }
 	
 	if (0xF8 & (rank|file)) { return 0; }
 	
@@ -231,7 +231,7 @@ char is_attacked_helper(Board *b, Color color, char rank, char file, char mask) 
 // Return true if the square rank,file is attacked by a peice
 char is_attacked(Board *b, Color color, char rank, char file) {
 	
-	int r,f;
+	char r,f;
 		
 	// Orthogonal
 	for (r = rank+1; !(r&0xF8); r++) {
@@ -325,18 +325,22 @@ char is_check(Board *b, Color c) {
 
 // 0 for illegal, 1 for legal
 char is_legal(Board *b, Move *m) {
-	Piece p = b->board[m->soure_rank][m->soure_file];
 	char check;
 	signed char x, y, dx, dy, sx, sy;
+	Piece piece, target;
 	
-	Piece piece = b->board[m->soure_rank][m->soure_file];
-	Piece target = b->board[m->destination_rank][m->destination_file];
+	// Piece has to move
+	if (m->soure_file == m->destination_file && m->soure_rank == m->destination_rank) { return 0; }
+	
+	piece = b->board[m->soure_rank][m->soure_file];
 	
 	// Can't move opponents piece
 	if (piece.color != b->current_turn) { return 0; }
 	
-	// Piece has to move
-	if (m->soure_file == m->destination_file && m->soure_rank == m->destination_rank) { return 0; }
+	target = b->board[m->destination_rank][m->destination_file];
+	
+	// Can't attack own piece
+	if (target.type != None && piece.color == target.color) { return 0; }
 	
 	// Check promotion
 	if (m->promotion != None) {
@@ -356,9 +360,6 @@ char is_legal(Board *b, Move *m) {
 		if (piece.type == Pawn && m->destination_rank == (piece.color==White ? 7 : 0)) { return 0; }
 	}
 	
-	// Can't attack own piece
-	if (target.type != None && piece.color == target.color) { return 0; }
-	
 	dx = m->destination_file-m->soure_file;
 	dy = m->destination_rank-m->soure_rank;
 		
@@ -373,6 +374,7 @@ char is_legal(Board *b, Move *m) {
 	switch (piece.type) {
 		case None:
 			return 0;
+		
 		case Pawn:
 			if (dx == 0) {
 				if (target.type != None) { return 0; }
@@ -394,18 +396,23 @@ char is_legal(Board *b, Move *m) {
 			} else {
 				return 0;
 			}
+			
 		case Knight:
 			if (dx*dx + dy*dy != 5) { return 0;}
 			goto post_move_check;
+			
 		case Bishop:
 			if (dx != dy && dx != -dy) { return 0; }
 			break;
+			
 		case Rook:
 			if (dx != 0 && dy != 0) { return 0; }
 			break;
+			
 		case Queen:
 			if (dx != 0 && dy != 0 && dx != dy && dx != -dy) { return 0; }
 			break;
+			
 		case King:
 			
 			//	Castling
