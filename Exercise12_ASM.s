@@ -287,99 +287,103 @@ UART0_S2_NO_RXINV_BRK10_NO_LBKDETECT_CLEAR_FLAGS  EQU  \
 ;C source will contain main ()
 ;Only subroutines and ISRs in this assembly source
             AREA    MyCode,CODE,READONLY
+			EXPORT	Init_UART0_IRQ
+			EXPORT UART0_IRQHandler
 ;>>>>> begin subroutine code <<<<<
-		EXPORT	Init_UART0_IRQ
-Init_UART0_IRQ  PROC {R0-R14}
-        PUSH    {R0-R3,LR}
-        MOVS    R2,#80
-        LDR             R0,=RxQBuffer
-        LDR             R1,=RxQRecord
-        BL              InitQueue
-        LDR             R0,=TxQBuffer
-        LDR             R1,=TxQRecord
-        BL              InitQueue
-
-        ;SIM_SPOT2 UART0SRC = 01
-        LDR     R0,=SIM_SOPT2
-        LDR        R1,=SIM_SOPT2_UART0SRC_MASK
-        LDR        R2,[R0,#0]                            ;Load copy of SOPT2
-        BICS    R2,R2,R1                            ;Clear clock source select
-        LDR        R1,=SIM_SOPT2_UART0SRC_MCGFLLCLK    ;Load selection to select for this clock
-        ORRS    R2,R2,R1                            ;Set selection bits in R2
-        STR        R2,[R0,#0]                            ;Save clock selection back to device
-        ;SIM_SOPT5 UART0ODE = 0, UART0RXSRC = 0, UART0TXSRC = 0
-        LDR        R0,=SIM_SOPT5
-        LDR        R1,=SIM_SOPT5_UART0_EXTERN_MASK_CLEAR
-        LDR        R2,[R0,#0]
-        BICS    R2,R2,R1                            ;Clear bits to set external UART connection
-        STR        R2,[R0,#0]
-        ;SIM_SCGC4 UART0 = 1
-        LDR        R0,=SIM_SCGC4
-        LDR        R1,=SIM_SCGC4_UART0_MASK
-        LDR        R2,[R0,#0]
-        ORRS    R2,R2,R1
-        STR        R2,[R0,#0]
-        ;SIM_SCGC5 PORTB = 1
-        LDR        R0,=SIM_SCGC5
-        LDR        R1,=SIM_SCGC5_PORTB_MASK
-        LDR        R2,[R0,#0]
-        ORRS    R2,R2,R1
-        STR        R2,[R0,#0]
-        ;MUX = 010
-        LDR        R0,=PORTB_PCR2
-        LDR        R1,=PORT_PCR_SET_PTB2_UART0_RX
-        STR        R1,[R0,#0]
-        LDR        R0,=PORTB_PCR1
-        LDR        R1,=PORT_PCR_SET_PTB1_UART0_TX
-        STR        R1,[R0,#0]
-
-        LDR        R0,=UART0_BASE
-;Disable UART0
-        MOVS    R1,#UART0_C2_T_R
-        LDRB    R2,[R0,#UART0_C2_OFFSET]
-        BICS    R2,R2,R1
-        STRB    R2,[R0,#UART0_C2_OFFSET]
-;Initialize NVIC for interrupts on UART0
-;Set UART0 IRQ priority
-        LDR        R0,=UART0_IPR
-        ;LDR    R1,=NVIC_IPR_UART0_MASK
-        LDR        R2,=NVIC_IPR_UART0_PRI_3
-        LDR        R3,[R0,#0]
-        ;BICS    R3,R3,R1
-        ORRS    R3,R3,R2
-        STR        R3,[R0,#0]
-        ;Clear any pending UART0 interrupts
-        LDR        R0,=NVIC_ICPR
-        LDR        R1,=NVIC_ICPR_UART0_MASK
-        STR        R1,[R0,#0]
-;Unmask UART0 interrupts
-        LDR        R0,=NVIC_ISER
-        LDR        R1,=NVIC_ISER_UART0_MASK
-        STR        R1,[R0,#0]
-;Set baud rate
-        LDR             R0,=UART0_BASE
-        MOVS    R1,#UART0_BDH_9600
-        STRB    R1,[R0,#UART0_BDH_OFFSET]
-        MOVS    R1,#UART0_BDL_9600
-        STRB    R1,[R0,#UART0_BDL_OFFSET]
-;Set format
-        MOVS    R1,#UART0_C1_8N1
-        STRB    R1,[R0,#UART0_C1_OFFSET]
-        MOVS    R1,#UART0_C3_NO_TXINV
-        STRB    R1,[R0,#UART0_C3_OFFSET]
-        MOVS    R1,#UART0_C4_NO_MATCH_OSR_16
-        STRB    R1,[R0,#UART0_C4_OFFSET]
-        MOVS    R1,#UART0_C5_NO_DMA_SSR_SYNC
-        STRB    R1,[R0,#UART0_C5_OFFSET]
-        MOVS    R1,#UART0_S1_CLEAR_FLAGS
-        STRB    R1,[R0,#UART0_S1_OFFSET]
-        MOVS    R1,#UART0_S2_NO_RXINV_BRK10_NO_LBKDETECT_CLEAR_FLAGS
-        STRB    R1,[R0,#UART0_S2_OFFSET]
-;Enable UART0 again
-        MOVS    R1,#UART0_C2_T_RI
-        STRB    R1,[R0,#UART0_C2_OFFSET]
-		POP     {R0-R2,R3,PC}
-		ENDP
+Init_UART0_IRQ	PROC	{R0-R14}
+			PUSH	{R0-R3,LR}
+			
+			;Initialize input and output buffers
+			MOVS	R2,#XQ_BUF_SZ
+			LDR		R0,=RxQBuffer
+			LDR		R1,=RxQRecord
+			BL		InitQueue
+			LDR		R0,=TxQBuffer
+			LDR		R1,=TxQRecord
+			BL		InitQueue
+			
+			;SIM_SPOT2 UART0SRC = 01
+			LDR 	R0,=SIM_SOPT2
+			LDR		R1,=SIM_SOPT2_UART0SRC_MASK
+			LDR		R2,[R0,#0]							;Load copy of SOPT2
+			BICS	R2,R2,R1							;Clear clock source select
+			LDR		R1,=SIM_SOPT2_UART0SRC_MCGFLLCLK	;Load selection to select for this clock
+			ORRS	R2,R2,R1							;Set selection bits in R2
+			STR		R2,[R0,#0]							;Save clock selection back to device
+			;SIM_SOPT5 UART0ODE = 0, UART0RXSRC = 0, UART0TXSRC = 0
+			LDR		R0,=SIM_SOPT5
+			LDR		R1,=SIM_SOPT5_UART0_EXTERN_MASK_CLEAR
+			LDR		R2,[R0,#0]
+			BICS	R2,R2,R1							;Clear bits to set external UART connection
+			STR		R2,[R0,#0]
+			;SIM_SCGC4 UART0 = 1
+			LDR		R0,=SIM_SCGC4
+			LDR		R1,=SIM_SCGC4_UART0_MASK
+			LDR		R2,[R0,#0]
+			ORRS	R2,R2,R1
+			STR		R2,[R0,#0]
+			;SIM_SCGC5 PORTB = 1
+			LDR		R0,=SIM_SCGC5
+			LDR		R1,=SIM_SCGC5_PORTB_MASK
+			LDR		R2,[R0,#0]
+			ORRS	R2,R2,R1
+			STR		R2,[R0,#0]
+			;MUX = 010
+			LDR		R0,=PORTB_PCR2
+			LDR		R1,=PORT_PCR_SET_PTB2_UART0_RX
+			STR		R1,[R0,#0]
+			LDR		R0,=PORTB_PCR1
+			LDR		R1,=PORT_PCR_SET_PTB1_UART0_TX
+			STR		R1,[R0,#0]
+			
+			LDR		R0,=UART0_BASE						;Load base address
+			;Disable UART0
+			MOVS	R1,#UART0_C2_T_R
+			LDRB	R2,[R0,#UART0_C2_OFFSET]
+			BICS	R2,R2,R1
+			STRB	R2,[R0,#UART0_C2_OFFSET]
+			;Initialize NVIC for interrupts on UART0
+			;Set UART0 IRQ priority
+			LDR		R0,=UART0_IPR
+			;LDR	R1,=NVIC_IPR_UART0_MASK
+			LDR		R2,=NVIC_IPR_UART0_PRI_3
+			LDR		R3,[R0,#0]
+			;BICS	R3,R3,R1
+			ORRS	R3,R3,R2
+			STR		R3,[R0,#0]
+			;Clear any pending UART0 interrupts
+			LDR		R0,=NVIC_ICPR
+			LDR		R1,=NVIC_ICPR_UART0_MASK
+			STR		R1,[R0,#0]
+			;Unmask UART0 interrupts
+			LDR		R0,=NVIC_ISER
+			LDR		R1,=NVIC_ISER_UART0_MASK
+			STR		R1,[R0,#0]
+			;Set baud rate
+			LDR		R0,=UART0_BASE
+			MOVS	R1,#UART0_BDH_9600
+			STRB	R1,[R0,#UART0_BDH_OFFSET]
+			MOVS	R1,#UART0_BDL_9600
+			STRB	R1,[R0,#UART0_BDL_OFFSET]
+			;Set format
+			MOVS	R1,#UART0_C1_8N1
+			STRB	R1,[R0,#UART0_C1_OFFSET]
+			MOVS	R1,#UART0_C3_NO_TXINV
+			STRB	R1,[R0,#UART0_C3_OFFSET]
+			MOVS	R1,#UART0_C4_NO_MATCH_OSR_16
+			STRB	R1,[R0,#UART0_C4_OFFSET]
+			MOVS	R1,#UART0_C5_NO_DMA_SSR_SYNC
+			STRB	R1,[R0,#UART0_C5_OFFSET]
+			MOVS	R1,#UART0_S1_CLEAR_FLAGS
+			STRB	R1,[R0,#UART0_S1_OFFSET]
+			MOVS	R1,#UART0_S2_NO_RXINV_BRK10_NO_LBKDETECT_CLEAR_FLAGS
+			STRB	R1,[R0,#UART0_S2_OFFSET]
+			;Enable UART0 again
+			MOVS	R1,#UART0_C2_T_RI
+			STRB	R1,[R0,#UART0_C2_OFFSET]
+			
+			POP		{R0-R3,PC}
+			ENDP
 ;---------------------------------------------------------------
 ; Initialize a Queue
 ; R0 is start of buffer, R1 is start of record, R2 is size
@@ -493,49 +497,39 @@ E_end                   POP             {R0,R1,R2,R3,PC}
 
 ;---------------------------------------------------------------
 ; Interrupt subroutine
-								EXPORT UART0_IRQHandler
-UART0_IRQHandler               PROC    {R0-R14}
-                                PUSH    {LR}
-
-; Load base address, C2 and S1
-                                LDR             R3,=UART0_BASE
-                                LDRB    R1,[R3,#UART0_C2_OFFSET]
-                                LDRB    R2,[R3,#UART0_S1_OFFSET]
-
-; Check TIE in C2
-                                MOVS    R0,#UART0_C2_TIE_MASK
-                                TST             R1,R0
-                                BEQ             ISR_Rx
-
-; Check TDRE in S1
-                                MOVS    R0,#UART0_S1_TDRE_MASK
-                                TST             R2,R0
-                                BEQ             ISR_Rx
-
-; Dequeue from TxQueue
-                                LDR             R1,=TxQRecord
-                                BL              Dequeue
-                                BCC             ISR_goodTx
-
-; Disable transmit if queue empty
-                                MOVS    R1,#UART0_C2_T_RI
-                                STRB    R1,[R3,#UART0_C2_OFFSET]
-
-; Write data to D register
-ISR_goodTx              STRB    R0,[R3,#UART0_D_OFFSET]
-
-; Check RDRF in S1
-ISR_Rx                  MOVS    R0,#UART0_S1_RDRF_MASK
-                                TST             R2,R0
-                                BEQ             ISR_end
-
-; Read from D register into RxQueue
-                                LDRB    R0,[R3,#UART0_D_OFFSET]
-                                LDR             R1,=RxQRecord
-                                BL              Enqueue
-
-ISR_end                 POP             {PC}
-                                ENDP
+UART0_IRQHandler
+			PUSH	{LR}
+			CPSID	I
+			LDR		R1,=UART0_BASE
+			MOVS	R2,#UART0_C2_TIE_MASK
+			LDRB	R3,[R1,#UART0_C2_OFFSET]
+			ANDS	R3,R3,R2
+			BEQ		UART0_ISR_Receive			;TxInterruptEnabled false
+			MOVS	R2,#UART0_S1_TDRE_MASK
+			LDRB	R3,[R1,#UART0_S1_OFFSET]
+			ANDS	R3,R3,R2
+			BEQ		UART0_ISR_Receive			;TxInterrupt false
+			LDR		R1,=TxQRecord
+			BL		Dequeue
+			LDR		R1,=UART0_BASE				;Shouldn't set carry i think
+			BCS		UART0_ISR_DisableTx			;Dequeue unsuccessful, disable txinterrupt
+			STRB	R0,[R1,#UART0_D_OFFSET]
+			B		UART0_ISR_End
+UART0_ISR_DisableTx
+			MOVS	R2,#UART0_C2_T_RI			;Disable transmit interrupts if there is not a character to transmit
+			STRB	R2,[R1,#UART0_C2_OFFSET]
+			B		UART0_ISR_End
+UART0_ISR_Receive
+			MOVS	R2,#UART0_S1_RDRF_MASK
+			LDRB	R3,[R1,#UART0_S1_OFFSET]
+			ANDS	R3,R3,R2
+			BEQ		UART0_ISR_End
+			LDRB	R0,[R1,#UART0_D_OFFSET]
+			LDR		R1,=RxQRecord
+			BL		Enqueue						;No check because can't do anything about a failure
+UART0_ISR_End
+			CPSIE	I
+			POP		{PC}
 
 ;---------------------------------------------------------------
 ; Print string in R0 with max len R1
