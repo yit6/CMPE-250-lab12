@@ -47,7 +47,7 @@ int main (void) {
 	//new_board(&b);
 	from_fen(&b, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
 
-  for (;;) {	
+  for (;;) {
 		print_board(&b);
 		//for_each_legal(&b, print_moves);
 		
@@ -79,14 +79,15 @@ int main (void) {
 		PutStringSB("\r\n",255);
 		
 		if (is_legal(&b, &m)) {
+			UInt8 ledMask = ((b.current_turn << 1) ^ GREEN_MASK) | ((b.current_turn) & BLUE_MASK); // only blue mask if users turn, only green mask if engines turn
 			PutStringSB("Legal!\r\n",255);
+			set_LED(ledMask);
 		} else {
 			PutStringSB("Not Legal!\r\n",255);
+			set_LED(RED_MASK);
 			goto get_input;
 		}
 		
 		make_move(&b, &m);
-		
-		set_LED(b.current_turn);
 	}
 }

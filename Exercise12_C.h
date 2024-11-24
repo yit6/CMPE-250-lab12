@@ -96,5 +96,9 @@ void PutNumUB (UInt8);
 void PutStringSB (char String[], int StringBufferCapacity);
 
 //IO stuff
+#define RED_MASK 0x4
+#define GREEN_MASK 0x2
+#define BLUE_MASK 0x1
+
 void init_LED(void);
 void set_LED(char rgb); //bit 2 r, 1 g, 0 b

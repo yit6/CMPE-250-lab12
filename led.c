@@ -34,8 +34,14 @@ int (led_offsets)[] = {
 	(&(FPTB->PCOR))-(uint32_t *)FPTB, // 0b100
 };
 
+/**
+Hello TAs/Dr. Melton, to explain what is happening here, basically
+we have a LUT that maps the color masks to the pointers to either
+PCOR or PSOR so that we don't have to branch in this function and can
+do it as three one liners
+*/
 void set_LED(char rgb) {
-	*((int *) FPTB+led_offsets[rgb&0x4]) = PORTB_LED_RED_MASK;
-	*((int *) FPTB+led_offsets[rgb&0x2]) = PORTB_LED_GREEN_MASK;
-	*((int *) FPTB+led_offsets[rgb&0x1]) = PORTB_LED_BLUE_MASK;
+	*((int *) FPTB+led_offsets[rgb & RED_MASK]) = PORTB_LED_RED_MASK;
+	*((int *) FPTB+led_offsets[rgb & GREEN_MASK]) = PORTB_LED_GREEN_MASK;
+	*((int *) FPTB+led_offsets[rgb & BLUE_MASK]) = PORTB_LED_BLUE_MASK;
 }
