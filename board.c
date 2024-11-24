@@ -787,12 +787,12 @@ Move random_move(Board *b) {
 short evaluate(Board *b) {
 	int i;
 	int j;
-	unsigned short total;
+	short total;
 	for(i = 0; i < 8; i++) {
 		for(j = 0; j < 8; j++) {
 			Piece p = b->board[i][j];
 			int realRank = i ^ ((p.color << 3) - p.color);
-			total += (piece_square[p.type + 1][realRank][j] ^ (0 - p.color)) + p.color;
+			total += ((signed short)piece_square[p.type + 1][realRank][j] ^ (0 - p.color)) + p.color;
 		}
 	}
 	return total;
