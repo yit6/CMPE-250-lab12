@@ -35,7 +35,7 @@ int main (void) {
 	
 	Move m;
 	char move_buffer[10];
-	char perft_print[20];
+	char perft_print[40];
 	unsigned long long perft_num;
 	
   __asm("CPSID   I");
@@ -46,11 +46,13 @@ int main (void) {
 	
   __asm("CPSIE   I");
 		
-	//new_board(&b);
-	from_fen(&b, "NKbqkbnr/PPRp1pPP/PN1R4/P3p1BQ/2B1P3/3P4/8/8 w k - 0 1");
+	new_board(&b);
+	//from_fen(&b, "NKbqkbnr/PPRp1pPP/PN1R4/P3p1BQ/2B1P3/3P4/8/8 w k - 0 1");
 
   for (;;) {
 		print_board(&b);
+		sprintf(perft_print, "Eval: %d\r\n1 ahead: %d\r\n", evaluate(&b), minimax(&b));
+		puts(perft_print);
 		//for_each_legal(&b, print_moves);
 		
 		get_input:
