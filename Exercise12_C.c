@@ -41,7 +41,7 @@ int main (void) {
   __asm("CPSID   I");
 	
   Init_UART0_IRQ();
-	//init_LED();
+	init_LED();
 	init_TPM();
 	
   __asm("CPSIE   I");
