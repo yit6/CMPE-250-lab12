@@ -105,4 +105,5 @@ void PutStringSB (char String[], int StringBufferCapacity);
 #define BLUE_MASK 0x1
 
 void init_LED(void);
+void init_TPM(void);
 void set_LED(char rgb); //bit 2 r, 1 g, 0 b

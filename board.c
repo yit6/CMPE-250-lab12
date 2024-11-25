@@ -798,7 +798,6 @@ short evaluate(Board *b) {
 	for(i = 0; i < 8; i++) {
 		for(j = 0; j < 8; j++) {
 			Piece p = b->board[i][j];
-			char buffer[20];
 			if (p.type == None) { continue; }
 			int realRank = i ^ ((p.color << 3) - p.color);
 			total += (piece_square[p.type - 1][j][realRank] ^ (0 - p.color)) + p.color;

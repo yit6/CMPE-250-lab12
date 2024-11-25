@@ -1,6 +1,31 @@
 #include "Exercise12_C.h"
 #include "MKL05Z4.h"
 
+/* Port B pin 7 symbols */
+#define PTB7_MUX_TPM0_CH2_OUT (2u << PORT_PCR_MUX_SHIFT)
+#define SET_PTB7_TPM0_CH2_OUT (PORT_PCR_ISF_MASK | \
+PTB7_MUX_TPM0_CH2_OUT)
+/* SIM_SOPT2 symbols */
+#define SIM_SOPT2_TPMSRC_MCGFLLCLK (1u << SIM_SOPT2_TPMSRC_SHIFT)
+/* TPM0_CONF symbol */
+#define TPM_CONF_DEFAULT (0)
+/* TPM0_CNT symbol */
+#define TPM_CNT_INIT (0)
+/* TPM0_MOD symbol */
+#define TPM_PWM_PERIOD (60000u)
+#define TPM_MOD_PWM_PERIOD_20ms (TPM_PWM_PERIOD - 1)
+/* TPM0_SC symbols */
+#define TPM_SC_CMOD_CLK (1u)
+#define TPM_SC_PS_DIV16 (0x4u)
+#define TPM_SC_CLK_DIV16 ((TPM_SC_CMOD_CLK << \
+TPM_SC_CMOD_SHIFT) | \
+TPM_SC_PS_DIV16)
+/* TPM0_C2SC symbol */
+#define TPM_CnSC_PWMH (TPM_CnSC_MSB_MASK | \
+TPM_CnSC_ELSB_MASK)
+
+//LED things
+
 #define POS_RED 8
 #define POS_GREEN 9
 #define POS_BLUE 10
@@ -12,6 +37,20 @@
 
 #define PORT_PCR_MUX_SELECT_1_MASK (1 << PORT_PCR_MUX_SHIFT)
 #define PORT_PCR_SET_GPIO (PORT_PCR_ISF_MASK | PORT_PCR_MUX_SELECT_1_MASK)
+
+void init_TPM(void) {
+        SIM->SOPT2 &= ~SIM_SOPT2_TPMSRC_MASK;
+        SIM->SOPT2 |= SIM_SOPT2_TPMSRC_MCGFLLCLK;
+        SIM->SCGC6 |= SIM_SCGC6_TPM0_MASK;
+        SIM->SCGC5 |= SIM_SCGC5_PORTB_MASK;
+        PORTB->PCR[8] = SET_PTB7_TPM0_CH2_OUT;
+        TPM0->CONF = TPM_CONF_DEFAULT;
+        TPM0->CNT = TPM_CNT_INIT;
+        TPM0->MOD = TPM_MOD_PWM_PERIOD_20ms;
+        TPM0->CONTROLS[2].CnSC = TPM_CnSC_PWMH;
+        TPM0->CONTROLS[2].CnV = TPM_MOD_PWM_PERIOD_20ms / 2;
+        TPM0->SC = TPM_SC_CLK_DIV16;
+}
 
 void init_LED() {
 	SIM->SCGC5 |= SIM_SCGC5_PORTB_MASK;
