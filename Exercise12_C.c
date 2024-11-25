@@ -47,7 +47,7 @@ int main (void) {
   __asm("CPSIE   I");
 		
 	//new_board(&b);
-	from_fen(&b, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
+	from_fen(&b, "NKbqkbnr/PPRp1pPP/PN1R4/P3p1BQ/2B1P3/3P4/8/8 w k - 0 1");
 
   for (;;) {
 		print_board(&b);
@@ -98,5 +98,10 @@ int main (void) {
 		}
 		
 		make_move(&b, &m);
+		if(is_gameover(&b)) {
+			puts("Game Over\r\n");
+		} else {
+			puts("Game NOT Over\r\n");
+		}
 	}
 }

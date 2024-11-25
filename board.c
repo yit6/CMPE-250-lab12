@@ -809,12 +809,12 @@ short evaluate(Board *b) {
 }
 
 void _gameover_helper(int i, Move m) {
-	gameoverStatus = 1;
+	gameoverStatus = 0;
 }
 
 //returns 0 if not in checkmate, 1 if yes in checkmate
 char is_gameover(Board *b) {
-	gameoverStatus = 0;
+	gameoverStatus = 1;
 	for_each_legal(b, _gameover_helper);
 	return gameoverStatus;
 }
