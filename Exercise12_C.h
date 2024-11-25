@@ -66,6 +66,7 @@ void make_move(Board *b, Move *m);
 void make_unmove(Board *b);
 void for_each_legal(Board *b, void f(int i, Move m));
 short evaluate(Board *b);
+char is_gameover(Board *b);
 
 Move random_move(Board *b);
 unsigned int random(void);

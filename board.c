@@ -65,6 +65,8 @@ const unsigned short piece_square[6][8][8] =
 	20 K, 30 K, 10 K,  0 K,  0 K, 10 K, 30 K, 20 K
 };
 
+char gameoverStatus;
+
 void new_board(Board *b) {
 	int i;
 	
@@ -804,4 +806,15 @@ short evaluate(Board *b) {
 		}
 	}
 	return total;
+}
+
+void _gameover_helper(int i, Move m) {
+	gameoverStatus = 1;
+}
+
+//returns 0 if not in checkmate, 1 if yes in checkmate
+char is_gameover(Board *b) {
+	gameoverStatus = 0;
+	for_each_legal(b, _gameover_helper);
+	return gameoverStatus;
 }
