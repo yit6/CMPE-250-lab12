@@ -16,6 +16,7 @@
 #include "Exercise12_C.h"
 
 Board b;
+char perft_print[40];
 
 void print_moves(int i, Move m) {
 	PutNumHex(i);
@@ -35,7 +36,6 @@ int main (void) {
 	
 	Move m;
 	char move_buffer[10];
-	char perft_print[40];
 	unsigned long long perft_num;
 	
   __asm("CPSID   I");
@@ -85,8 +85,12 @@ int main (void) {
 			continue;
 		}
 		if(*move_buffer == 'X') { //spingbob
-			long rgb = strtol(move_buffer + 1, 0, 16);
+			UInt32 rgb = 0;
+			int succ = sscanf(move_buffer + 1, "%X", &rgb);
 			set_RGB(rgb);
+			PutNumHex(succ);
+			puts(move_buffer);
+			puts("\r\n");
 			continue;
 		}
 		
