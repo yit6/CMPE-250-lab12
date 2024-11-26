@@ -12,6 +12,13 @@ void _perft_helper(int i, Move m) {
 	_perft_depth--;
 	make_move(_perft_board, &m);
 	
+	if (evaluate(_perft_board) != _perft_board->pst_eval) {
+		print_board(_perft_board);
+		make_unmove(_perft_board);
+		print_board(_perft_board);
+		while (1);
+	}
+	
 	if (_perft_depth == 0) {
 		_perft_num++;
 	} else {

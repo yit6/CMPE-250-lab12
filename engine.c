@@ -133,7 +133,7 @@ void _minimax_helper(int i, Move m) {
 void _minimax(void) {
 	
 	if (minimax_depth == 0) {
-		minimax_evals[0] = evaluate(engine_board);
+		minimax_evals[0] = engine_board->pst_eval;
 		return;
 	}
 	
