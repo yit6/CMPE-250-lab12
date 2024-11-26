@@ -378,6 +378,8 @@ char is_legal(Board *b, Move *m) {
 	dx = abs(dx);
 	dy = abs(dy);
 	
+	char sliding = 1;
+	
 	// Check piece movement, return false if invalid
 	// and true for valid moves for non-sliding pieces
 	switch (piece.type) {
@@ -385,6 +387,7 @@ char is_legal(Board *b, Move *m) {
 			return 0;
 		
 		case Pawn:
+			sliding = 0;
 			if (dx == 0) {
 				if (target.type != None) { return 0; }
 				if (sy != (piece.color==White?1:-1)) { return 0; }
@@ -392,23 +395,24 @@ char is_legal(Board *b, Move *m) {
 					// Can't jump over piece
 					int t = (m->soure_rank+m->destination_rank)/2;
 					if (b->board[t][m->soure_file].type != None) { return 0; }
-					goto post_move_check;
+					break;
 				}
 				if (dy != 1) { return 0; }
-				goto post_move_check;
+				break;
 			} else if (dx == 1) {
 				if (target.type == None || target.color == piece.color) {
 					if (m->destination_file != b->en_pas_file || m->destination_rank != (b->current_turn==White?5:2)) { return 0; }
 				}
 				if (m->destination_rank-m->soure_rank != ((piece.color==White)?1:-1)) {return 0; }
-				goto post_move_check;
+				break;
 			} else {
 				return 0;
 			}
 			
 		case Knight:
+			sliding = 0;
 			if (dx*dx + dy*dy != 5) { return 0;}
-			goto post_move_check;
+			break;
 			
 		case Bishop:
 			if (dx != dy && dx != -dy) { return 0; }
@@ -423,7 +427,7 @@ char is_legal(Board *b, Move *m) {
 			break;
 			
 		case King:
-			
+			sliding = 0;
 			//	Castling
 			if (m->soure_file==4 && (m->destination_file==2 || m->destination_file==6)) {
 				
@@ -448,20 +452,21 @@ char is_legal(Board *b, Move *m) {
 				if (is_attacked(b, b->current_turn^1, m->soure_rank, (m->soure_file+m->destination_file)/2)) {
 					return 0;
 				}
-				goto post_move_check;
 			}
 			
 			if (dx > 1 || dy > 1) { return 0;}
+			break;
 	}
 	
 	// Check sliding pieces
 	
-	for (x = m->soure_file+sx, y = m->soure_rank+sy; x != m->destination_file || y != m->destination_rank; x+=sx,y+=sy) {
-		if (b->board[y][x].type != None) { return 0; }
-	}	
 	
-	post_move_check:
-		
+	if(sliding) {
+		for (x = m->soure_file+sx, y = m->soure_rank+sy; x != m->destination_file || y != m->destination_rank; x+=sx,y+=sy) {
+			if (b->board[y][x].type != None) { return 0; }
+		}	
+	}
+			
 	make_move(b, m);
 	check = is_check(b, b->current_turn^1);
 	make_unmove(b);

@@ -2,8 +2,7 @@
 #include "MKL05Z4.h"
 
 /* Port B pin 7 symbols */
-#define PTB8_MUX_TPM0_CH3_OUT (2u << PORT_PCR_MUX_SHIFT)
-#define SET_PTB8_TPM0_CH3_OUT (PORT_PCR_ISF_MASK | PTB8_MUX_TPM0_CH3_OUT)
+#define SET_TO_TPM (PORT_PCR_ISF_MASK | (2u << PORT_PCR_MUX_SHIFT))
 /* SIM_SOPT2 symbols */
 #define SIM_SOPT2_TPMSRC_MCGFLLCLK (1u << SIM_SOPT2_TPMSRC_SHIFT)
 /* TPM0_CONF symbol */
@@ -43,58 +42,25 @@ void init_TPM(void) {
   SIM->SOPT2 |= SIM_SOPT2_TPMSRC_MCGFLLCLK;
   SIM->SCGC6 |= SIM_SCGC6_TPM0_MASK;
   SIM->SCGC5 |= SIM_SCGC5_PORTB_MASK;
-  PORTB->PCR[POS_RED] = SET_PTB8_TPM0_CH3_OUT;
-	PORTB->PCR[POS_GREEN] = SET_PTB8_TPM0_CH3_OUT;
-	PORTB->PCR[POS_BLUE] = SET_PTB8_TPM0_CH3_OUT;
+  PORTB->PCR[POS_RED] = SET_TO_TPM;
+	PORTB->PCR[POS_GREEN] = SET_TO_TPM;
+	PORTB->PCR[POS_BLUE] = SET_TO_TPM;
   TPM0->CONF = TPM_CONF_DEFAULT;
   TPM0->CNT = TPM_CNT_INIT;
   TPM0->MOD = MAX_BRIGHTNESS;
   TPM0->CONTROLS[3].CnSC = TPM_CnSC_PWMH;
-  TPM0->CONTROLS[3].CnV = MAX_BRIGHTNESS / 2;
+  TPM0->CONTROLS[3].CnV = MAX_BRIGHTNESS;
 	TPM0->CONTROLS[2].CnSC = TPM_CnSC_PWMH;
-  TPM0->CONTROLS[2].CnV = MAX_BRIGHTNESS / 2;
+  TPM0->CONTROLS[2].CnV = MAX_BRIGHTNESS;
 	TPM0->CONTROLS[1].CnSC = TPM_CnSC_PWMH;
-  TPM0->CONTROLS[1].CnV = MAX_BRIGHTNESS / 2;
+  TPM0->CONTROLS[1].CnV = MAX_BRIGHTNESS;
   TPM0->SC = TPM_SC_CLK_DIV16;
 }
 
-void init_LED() {
-	SIM->SCGC5 |= SIM_SCGC5_PORTB_MASK;
-	PORTB->PCR[POS_RED] = PORT_PCR_SET_GPIO;
-	PORTB->PCR[POS_GREEN] = PORT_PCR_SET_GPIO;
-	PORTB->PCR[POS_BLUE] = PORT_PCR_SET_GPIO;
-	FPTB->PDDR = PORTB_LEDS_MASK;
-	
-	//turn off LEDs
-	FPTB->PSOR = PORTB_LED_RED_MASK;
-	FPTB->PSOR = PORTB_LED_GREEN_MASK;
-	FPTB->PSOR = PORTB_LED_BLUE_MASK;
-}
-
-int (led_offsets)[] = {
-	(&(FPTB->PSOR))-(uint32_t *)FPTB, // 0b000
-	(&(FPTB->PCOR))-(uint32_t *)FPTB, // 0b001
-	(&(FPTB->PCOR))-(uint32_t *)FPTB, // 0b010
-	0,                                // 0b011
-	(&(FPTB->PCOR))-(uint32_t *)FPTB, // 0b100
-};
-
-/**
-Hello TAs/Dr. Melton, to explain what is happening here, basically
-we have a LUT that maps the color masks to the pointers to either
-PCOR or PSOR so that we don't have to branch in this function and can
-do it as three one liners
-*/
-void set_LED(char rgb) {
-	*((int *) FPTB+led_offsets[rgb & RED_MASK]) = PORTB_LED_RED_MASK;
-	*((int *) FPTB+led_offsets[rgb & GREEN_MASK]) = PORTB_LED_GREEN_MASK;
-	*((int *) FPTB+led_offsets[rgb & BLUE_MASK]) = PORTB_LED_BLUE_MASK;
-}
-
 void set_RGB(UInt32 rgb) {
-	int r = 255 - ((rgb & 0xFF0000) >> 16);
-	int g = 255 - ((rgb & 0x00FF00) >> 8);
-	int b = 255 - (rgb & 0x0000FF);
+	int r = 255 - ((rgb & RED_MASK) >> 16);
+	int g = 255 - ((rgb & GREEN_MASK) >> 8);
+	int b = 255 - (rgb & BLUE_MASK);
 	TPM0->CONTROLS[3].CnV = r * MAX_BRIGHTNESS / 255;
 	TPM0->CONTROLS[2].CnV = g * MAX_BRIGHTNESS / 255;
 	TPM0->CONTROLS[1].CnV = b * MAX_BRIGHTNESS / 255;

@@ -41,7 +41,6 @@ int main (void) {
   __asm("CPSID   I");
 	
   Init_UART0_IRQ();
-	init_LED();
 	init_TPM();
 	
   __asm("CPSIE   I");
@@ -52,12 +51,11 @@ int main (void) {
   for (;;) {
 		print_board(&b);
 		
-		sprintf(perft_print, "Eval: %d, internal board: %d\r\n", evaluate(&b), b.pst_eval);
-		puts(perft_print);
+		//sprintf(perft_print, "Eval: %d, internal board: %d\r\n", evaluate(&b), b.pst_eval);
+		//puts(perft_print);
 		
 		//for_each_legal(&b, print_moves);
 		
-		get_input:
 		GetStringSB(move_buffer, 10);
 		m = parse_move(move_buffer);
 		
@@ -77,8 +75,7 @@ int main (void) {
 			perft_num = perft(&b, move_buffer[1]-'0');
 			sprintf(perft_print, "\r\n%lld nodes.\r\n", perft_num);
 			puts(perft_print);
-			print_board(&b);
-			goto get_input;
+			continue;
 		}
 		if (*move_buffer == 'm') {
 			Move engine_move = best_move(&b);
@@ -87,7 +84,7 @@ int main (void) {
 			PutStringSB("\r\n",255);
 			continue;
 		}
-		if(*move_buffer == 'X') {
+		if(*move_buffer == 'X') { //spingbob
 			long rgb = strtol(move_buffer + 1, 0, 16);
 			set_RGB(rgb);
 			continue;
@@ -97,20 +94,23 @@ int main (void) {
 		puts("\r\n");
 		
 		if (is_legal(&b, &m)) {
-			UInt8 ledMask = ((b.current_turn << 1) ^ GREEN_MASK) | ((b.current_turn) & BLUE_MASK); // only blue mask if users turn, only green mask if engines turn
+			UInt32 turn = b.current_turn;
+			//UInt32 ledMask = ((-(b.current_turn ^ 0x1)) ^ GREEN_MASK) | ((-b.current_turn) & BLUE_MASK); // only blue mask if users turn, only green mask if engines turn
+			UInt32 rizzy = 0xFF << (8 & (-(turn ^ 1)));
+			PutNumHex(rizzy);
 			puts("Legal!\r\n");
-			set_LED(ledMask);
+			set_RGB(rizzy);
 		} else {
 			puts("Not Legal!\r\n");
-			set_LED(RED_MASK);
-			goto get_input;
+			set_RGB(RED_MASK);
+			continue;
 		}
 		
 		make_move(&b, &m);
-		if(is_gameover(&b)) {
+		/*if(is_gameover(&b)) {
 			puts("Game Over\r\n");
 		} else {
 			puts("Game NOT Over\r\n");
-		}
+		}*/
 	}
 }
