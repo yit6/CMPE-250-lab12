@@ -4,12 +4,12 @@ Move best;
 short best_eval;
 Board *engine_board;
 
-short minimax(Board *b);
+void _minimax(void);
 
 void _best_move(int i, Move m) {
 	make_move(engine_board, &m);
 	
-	short eval = minimax(engine_board);
+	short eval = minimax(engine_board, 2);
 	
 	if (engine_board->current_turn==White) { eval = 0-eval; }
 	
@@ -28,23 +28,38 @@ Move best_move(Board *board) {
 	return best;
 }
 
-short m1;
+short minimax_evals[5] = { -5 };
+char minimax_depth;
 
-void _m1(int i, Move m) {
-	
+void _minimax_helper(int i, Move m) {
 	make_move(engine_board, &m);
 	
-	short e = evaluate(engine_board);
-	if (i == 0) { m1 = e; }
+	_minimax();
 	
-	if (engine_board->current_turn == White && e < m1) { m1 = e; }
-	if (engine_board->current_turn == Black && e > m1) { m1 = e; }
+	if (i == 0 || (engine_board->current_turn == White && minimax_evals[minimax_depth+1] > minimax_evals[minimax_depth]) || (engine_board->current_turn == Black && minimax_evals[minimax_depth+1] < minimax_evals[minimax_depth])) {		
+		minimax_evals[minimax_depth+1] = minimax_evals[minimax_depth];
+	}
 	
 	make_unmove(engine_board);
 }
 
-short minimax(Board *b) {
+void _minimax(void) {
+	
+	if (minimax_depth == 0) {
+		minimax_evals[0] = evaluate(engine_board);
+		return;
+	}
+	
+	minimax_depth--;
+	
+	for_each_legal(engine_board, _minimax_helper);
+	
+	minimax_depth++;
+}
+
+short minimax(Board *b, char depth) {
 	engine_board = b;
-	for_each_legal(engine_board,_m1);
-	return m1;
+	minimax_depth = depth;
+	_minimax();
+	return minimax_evals[depth];
 }

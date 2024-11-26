@@ -51,8 +51,6 @@ int main (void) {
 
   for (;;) {
 		print_board(&b);
-		sprintf(perft_print, "Eval: %d\r\n1 ahead: %d\r\n", evaluate(&b), minimax(&b));
-		puts(perft_print);
 		//for_each_legal(&b, print_moves);
 		
 		get_input:
