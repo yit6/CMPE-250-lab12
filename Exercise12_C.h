@@ -40,6 +40,7 @@ struct game_history {
 	Piece captured;
 	char en_pas_file;
 	Move move;
+	short pst_eval;
 };
 
 // board[rank][file],
@@ -52,8 +53,9 @@ typedef struct board {
 	char en_pas_file; // -1 for no en pas
 	
 	int ply;
-	struct game_history hist[255];
+	struct game_history hist[100];
 	
+	short pst_eval;
 } Board;
 
 void new_board(Board *b);

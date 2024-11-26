@@ -8,6 +8,9 @@
 #define Q + 900
 #define K + 100
 
+#define pst_value(p, rank, file) (piece_square[p.type - 1][file][rank ^ ((p.color << 3) - p.color)] ^ (0 - p.color)) + p.color
+#define pos_pst_value(b, rank, file) pst_value(b->board[rank][file], rank, file)
+
 const unsigned short piece_square[6][8][8] = 
 {
 	0 P,  0 P,  0 P,  0 P,  0 P,  0 P,  0 P,  0 P,
@@ -127,6 +130,8 @@ void new_board(Board *b) {
 	b->en_pas_file = -1;
 	
 	b->ply = 0;
+	
+	b->pst_eval = 0;
 }
 
 void from_fen(Board *b, char *fen) {
@@ -173,6 +178,8 @@ void from_fen(Board *b, char *fen) {
 	b->en_pas_file = -1;
 	
 	b->ply = 0;
+	
+	b->pst_eval = evaluate(b);
 }
 
 void print_board(Board *b) {
@@ -471,11 +478,13 @@ void make_move(Board *b, Move *m) {
 	hist.castling_rights = b->castling_rights;
 	hist.en_pas_file = b->en_pas_file;
 	hist.move = *m;
+	hist.pst_eval = b->pst_eval;
 	
 	b->hist[b->ply++] = hist;
 	
 	// En Passant
 	if (b->board[m->soure_rank][m->soure_file].type == Pawn && m->destination_file == b->en_pas_file && m->destination_rank == (b->current_turn==White?2:5)) {
+		b->pst_eval -= pos_pst_value(b, m->soure_rank, m->soure_file);
 		b->board[m->soure_rank][b->en_pas_file].type = None;
 	}	
 	
@@ -511,25 +520,42 @@ void make_move(Board *b, Move *m) {
 	// Castling
 	if (b->board[m->soure_rank][m->soure_file].type == King && m->soure_file == 4 && (m->destination_file == 2 || m->destination_file == 6)) {
 		if (m->destination_file == 6 && m->destination_rank == 0) {
+			b->pst_eval -= pos_pst_value(b, 0, 7);
+			
 			b->board[0][7].type = None;
 			b->board[0][5].type = Rook;
 			b->board[0][5].color = White;
+			
+			b->pst_eval += pos_pst_value(b, 0, 5);
 		}
 		if (m->destination_file == 2 && m->destination_rank == 0) {
+			b->pst_eval -= pos_pst_value(b, 0, 0);
+			
 			b->board[0][0].type = None;
 			b->board[0][3].type = Rook;
 			b->board[0][3].color = White;
+			
+			b->pst_eval += pos_pst_value(b, 0, 3);
 		}
 		if (m->destination_file == 6 && m->destination_rank == 7) {
+			b->pst_eval -= pos_pst_value(b, 7, 7);
+			
 			b->board[7][7].type = None;
 			b->board[7][5].type = Rook;
 			b->board[7][5].color = Black;
+			
+			b->pst_eval += pos_pst_value(b, 7, 5);
 		}
 		if (m->destination_file == 2 && m->destination_rank == 7) {
+			b->pst_eval -= pos_pst_value(b, 7, 0);
+			
 			b->board[7][0].type = None;
 			b->board[7][3].type = Rook;
 			b->board[7][3].color = Black;
+			
+			b->pst_eval += pos_pst_value(b, 7, 3);
 		}
+		
 		if (b->current_turn == Black) {
 			b->castling_rights.white_kingside  = 0;
 			b->castling_rights.white_queenside = 0;
@@ -538,13 +564,19 @@ void make_move(Board *b, Move *m) {
 			b->castling_rights.black_queenside = 0;
 		}
 	}
+	
+	b->pst_eval -= pos_pst_value(b, m->destination_rank, m->destination_file);
 	b->board[m->destination_rank][m->destination_file] = b->board[m->soure_rank][m->soure_file];
+	b->pst_eval += pos_pst_value(b, m->destination_rank, m->destination_file);
 	
 	if (m->promotion != None) {
+		b->pst_eval -= pos_pst_value(b, m->destination_rank, m->destination_file);
 		b->board[m->destination_rank][m->destination_file].type = m->promotion;
+		b->pst_eval += pos_pst_value(b, m->destination_rank, m->destination_file);
 	}
 	
 	b->board[m->soure_rank][m->soure_file].type = None;
+	b->pst_eval -= pos_pst_value(b, m->soure_rank, m->soure_file);
 }
 
 void make_unmove(Board *b) {
@@ -559,6 +591,7 @@ void make_unmove(Board *b) {
 	m = hist.move;
 	b->castling_rights = hist.castling_rights;
 	b->en_pas_file = hist.en_pas_file;
+	b->pst_eval = hist.pst_eval;
 	
 	b->board[m.soure_rank][m.soure_file] = b->board[m.destination_rank][m.destination_file];
 	b->board[m.destination_rank][m.destination_file] = hist.captured;
@@ -801,8 +834,7 @@ short evaluate(Board *b) {
 		for(j = 0; j < 8; j++) {
 			Piece p = b->board[i][j];
 			if (p.type == None) { continue; }
-			int realRank = i ^ ((p.color << 3) - p.color);
-			total += (piece_square[p.type - 1][j][realRank] ^ (0 - p.color)) + p.color;
+			total += pst_value(p,i,j);
 		}
 	}
 	return total;

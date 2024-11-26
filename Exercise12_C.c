@@ -51,6 +51,10 @@ int main (void) {
 
   for (;;) {
 		print_board(&b);
+		
+		sprintf(perft_print, "Eval: %d, internal board: %d\r\n", evaluate(&b), b.pst_eval);
+		puts(perft_print);
+		
 		//for_each_legal(&b, print_moves);
 		
 		get_input:

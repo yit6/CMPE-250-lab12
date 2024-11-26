@@ -9,7 +9,7 @@ void _minimax(void);
 void _best_move(int i, Move m) {
 	make_move(engine_board, &m);
 	
-	short eval = minimax(engine_board, 2);
+	short eval = minimax(engine_board, 3);
 	
 	if (engine_board->current_turn==White) { eval = 0-eval; }
 	
@@ -19,11 +19,13 @@ void _best_move(int i, Move m) {
 	}
 	
 	make_unmove(engine_board);
+	PutChar('.');
 }
 
 Move best_move(Board *board) {
 	engine_board = board;
 	for_each_legal(engine_board, _best_move);
+	PutChar('\r');
 	
 	return best;
 }
