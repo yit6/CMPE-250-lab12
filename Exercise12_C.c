@@ -83,6 +83,11 @@ int main (void) {
 			PutStringSB("\r\n",255);
 			continue;
 		}
+		if(*move_buffer == 'X') {
+			long rgb = strtol(move_buffer + 1, 0, 16);
+			set_RGB(rgb);
+			continue;
+		}
 		
 		print_move(&m);
 		puts("\r\n");

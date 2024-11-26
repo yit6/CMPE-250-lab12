@@ -108,4 +108,5 @@ void PutStringSB (char String[], int StringBufferCapacity);
 
 void init_LED(void);
 void init_TPM(void);
+void set_RGB(UInt32 rgb); //0 through 9
 void set_LED(char rgb); //bit 2 r, 1 g, 0 b
