@@ -57,6 +57,7 @@ void init_TPM(void) {
   TPM0->SC = TPM_SC_CLK_DIV16;
 }
 
+//haha yeah
 void set_RGB(UInt32 rgb) {
 	int r = 255 - ((rgb & RED_MASK) >> 16);
 	int g = 255 - ((rgb & GREEN_MASK) >> 8);
