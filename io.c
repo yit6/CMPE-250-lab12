@@ -29,3 +29,34 @@ void print_move(Move *m) {
 	if (m->promotion ==   Rook) { PutChar('r'); }
 	if (m->promotion ==  Queen) { PutChar('q'); }
 }
+
+void print_board(Board *b) {
+	
+	int rank,file;
+	char divider[] = "|\r\n  +---+---+---+---+---+---+---+---+\r\n8 ";
+	char files[] = "    a   b   c   d   e   f   g   h\r\n";
+	
+	puts(files);
+	puts(divider+3);
+	
+	for (rank = 7; rank >= 0; rank--) {
+		for (file = 0; file < 8; file++) {
+			char c[4] = "|   ";
+			
+			c[2] = " PNBRQK"[b->board[rank][file].type] | (b->board[rank][file].color << 5);
+						
+			PutStringSB(c,4);
+		}
+		divider[40] = " 1234567"[rank];
+		puts(divider);
+	}
+	puts(files+2);
+	
+	//if (b->castling_rights.white_kingside)  { PutChar('K'); }
+	//if (b->castling_rights.white_queenside) { PutChar('Q'); }
+	//if (b->castling_rights.black_kingside)  { PutChar('k'); }
+	//if (b->castling_rights.black_queenside) { PutChar('q'); }	
+	
+	puts(b->current_turn==White?"White":"Black");
+	puts(" to move\r\n");
+}

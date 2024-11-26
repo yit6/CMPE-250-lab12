@@ -1,82 +1,6 @@
 #include <stdlib.h>
 #include "Exercise12_C.h"
 
-#define P + 100
-#define N + 300
-#define B + 310
-#define R + 500
-#define Q + 900
-#define K + 100
-
-#define pst_value(p, rank, file) (piece_square[p.type][file][rank ^ ((p.color << 3) - p.color)] ^ (0 - p.color)) + p.color
-#define pos_pst_value(b, rank, file) pst_value(b->board[rank][file], rank, file)
-
-const unsigned short piece_square[7][8][8] = 
-{
-	0,		0,		0,		0,		0,		0,		0,		0,
-	0,		0,		0,		0,		0,		0,		0,		0,
-	0,		0,		0,		0,		0,		0,		0,		0,
-	0,		0,		0,		0,		0,		0,		0,		0,
-	0,		0,		0,		0,		0,		0,		0,		0,
-	0,		0,		0,		0,		0,		0,		0,		0,
-	0,		0,		0,		0,		0,		0,		0,		0,
-	0,		0,		0,		0,		0,		0,		0,		0,
-	
-	0 P,  0 P,  0 P,  0 P,  0 P,  0 P,  0 P,  0 P,
-	50 P, 50 P, 50 P, 50 P, 50 P, 50 P, 50 P, 50 P,
-	10 P, 10 P, 20 P, 30 P, 30 P, 20 P, 10 P, 10 P,
-	5 P,  5 P, 10 P, 25 P, 25 P, 10 P,  5 P,  5 P,
-	0 P,  0 P,  0 P, 20 P, 20 P,  0 P,  0 P,  0 P,	
-	5 P, -5 P,-10 P,  0 P,  0 P,-10 P, -5 P,  5 P,
-	5 P, 10 P, 10 P,-20 P,-20 P, 10 P, 10 P,  5 P,
-	0 P,  0 P,  0 P,  0 P,  0 P,  0 P,  0 P,  0 P,
-	
-	-50 N,-40 N,-30 N,-30 N,-30 N,-30 N,-40 N,-50 N,
-	-40 N,-20 N,  0 N,  0 N,  0 N,  0 N,-20 N,-40 N,
-	-30 N,  0 N, 10 N, 15 N, 15 N, 10 N,  0 N,-30 N,
-	-30 N,  5 N, 15 N, 20 N, 20 N, 15 N,  5 N,-30 N,
-	-30 N,  0 N, 15 N, 20 N, 20 N, 15 N,  0 N,-30 N,
-	-30 N,  5 N, 10 N, 15 N, 15 N, 10 N,  5 N,-30 N,
-	-40 N,-20 N,  0 N,  5 N,  5 N,  0 N,-20 N,-40 N,
-	-50 N,-40 N,-30 N,-30 N,-30 N,-30 N,-40 N,-50 N,
-	
-	-20 B,-10 B,-10 B,-10 B,-10 B,-10 B,-10 B,-20 B,
-	-10 B,  0 B,  0 B,  0 B,  0 B,  0 B,  0 B,-10 B,
-	-10 B,  0 B,  5 B, 10 B, 10 B,  5 B,  0 B,-10 B,
-	-10 B,  5 B,  5 B, 10 B, 10 B,  5 B,  5 B,-10 B,
-	-10 B,  0 B, 10 B, 10 B, 10 B, 10 B,  0 B,-10 B,
-	-10 B, 10 B, 10 B, 10 B, 10 B, 10 B, 10 B,-10 B,
-	-10 B,  5 B,  0 B,  0 B,  0 B,  0 B,  5 B,-10 B,
-	-20 B,-10 B,-10 B,-10 B,-10 B,-10 B,-10 B,-20 B,
-	
-	0 R,  0 R,  0 R,  0 R,  0 R,  0 R,  0 R,  0 R,
-	5 R, 10 R, 10 R, 10 R, 10 R, 10 R, 10 R,  5 R,
-	-5 R,  0 R,  0 R,  0 R,  0 R,  0 R,  0 R, -5 R,
-	-5 R,  0 R,  0 R,  0 R,  0 R,  0 R,  0 R, -5 R,
-	-5 R,  0 R,  0 R,  0 R,  0 R,  0 R,  0 R, -5 R,
-	-5 R,  0 R,  0 R,  0 R,  0 R,  0 R,  0 R, -5 R,
-	-5 R,  0 R,  0 R,  0 R,  0 R,  0 R,  0 R, -5 R,
-	0 R,  0 R,  0 R,  5 R,  5 R,  0 R,  0 R,  0 R,
-	
-	-20 Q,-10 Q,-10 Q, -5 Q, -5 Q,-10 Q,-10 Q,-20 Q,
-	-10 Q,  0 Q,  0 Q,  0 Q,  0 Q,  0 Q,  0 Q,-10 Q,
-	-10 Q,  0 Q,  5 Q,  5 Q,  5 Q,  5 Q,  0 Q,-10 Q,
-	-5 Q,  0 Q,  5 Q,  5 Q,  5 Q,  5 Q,  0 Q, -5 Q,
-	0 Q,  0 Q,  5 Q,  5 Q,  5 Q,  5 Q,  0 Q, -5 Q,
-	-10 Q,  5 Q,  5 Q,  5 Q,  5 Q,  5 Q,  0 Q,-10 Q,
-	-10 Q,  0 Q,  5 Q,  0 Q,  0 Q,  0 Q,  0 Q,-10 Q,
-	-20 Q,-10 Q,-10 Q, -5 Q, -5 Q,-10 Q,-10 Q,-20 Q,
-	
-	-30 K,-40 K,-40 K,-50 K,-50 K,-40 K,-40 K,-30 K,
-	-30 K,-40 K,-40 K,-50 K,-50 K,-40 K,-40 K,-30 K,
-	-30 K,-40 K,-40 K,-50 K,-50 K,-40 K,-40 K,-30 K,
-	-30 K,-40 K,-40 K,-50 K,-50 K,-40 K,-40 K,-30 K,
-	-20 K,-30 K,-30 K,-40 K,-40 K,-30 K,-30 K,-20 K,
-	-10 K,-20 K,-20 K,-20 K,-20 K,-20 K,-20 K,-10 K,
-	20 K, 20 K,  0 K,  0 K,  0 K,  0 K, 20 K, 20 K,
-	20 K, 30 K, 10 K,  0 K,  0 K, 10 K, 30 K, 20 K
-};
-
 char gameoverStatus;
 
 void new_board(Board *b) {
@@ -189,45 +113,6 @@ void from_fen(Board *b, char *fen) {
 	b->ply = 0;
 	
 	b->pst_eval = evaluate(b);
-}
-
-void print_board(Board *b) {
-	
-	int rank,file;
-	char divider[] = "|\r\n  +---+---+---+---+---+---+---+---+\r\n8 ";
-	char files[] = "    a   b   c   d   e   f   g   h\r\n";
-	
-	puts(files);
-	puts(divider+3);
-	
-	for (rank = 7; rank >= 0; rank--) {
-		for (file = 0; file < 8; file++) {
-			char c[4] = "|   ";
-			if (b->board[rank][file].type == None) {
-				PutStringSB(c,4);
-				continue;
-			}
-			
-			c[2] = "PNBRQK"[b->board[rank][file].type-1];
-			
-			if (b->board[rank][file].color == Black) {
-				c[2] |= 1<<5;
-			}
-			
-			PutStringSB(c,4);
-		}
-		divider[40] = " 1234567"[rank];
-		puts(divider);
-	}
-	puts(files+2);
-	
-	//if (b->castling_rights.white_kingside)  { PutChar('K'); }
-	//if (b->castling_rights.white_queenside) { PutChar('Q'); }
-	//if (b->castling_rights.black_kingside)  { PutChar('k'); }
-	//if (b->castling_rights.black_queenside) { PutChar('q'); }	
-	
-	puts(b->current_turn==White?"White":"Black");
-	puts(" to move\r\n");
 }
 
 #define PAWN_MASK 0x2
@@ -838,18 +723,6 @@ void _random_move_helper(int i, Move m) {
 Move random_move(Board *b) {
 	for_each_legal(b, _random_move_helper);
 	return _random_move;
-}
-
-short evaluate(Board *b) {
-	int i;
-	int j;
-	short total = 0;
-	for(i = 0; i < 8; i++) {
-		for(j = 0; j < 8; j++) {
-			total += pos_pst_value(b,i,j);
-		}
-	}
-	return total;
 }
 
 void _gameover_helper(int i, Move m) {

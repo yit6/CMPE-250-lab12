@@ -1,5 +1,8 @@
 #define puts(str) PutStringSB(str, 255)
 
+#define pst_value(p, rank, file) (piece_square[p.type][file][rank ^ ((p.color << 3) - p.color)] ^ (0 - p.color)) + p.color
+#define pos_pst_value(b, rank, file) pst_value(b->board[rank][file], rank, file)
+
 typedef enum piece_type {
 	None=0,
 	Pawn,
@@ -57,6 +60,8 @@ typedef struct board {
 	
 	short pst_eval;
 } Board;
+
+extern const short piece_square[7][8][8];
 
 void new_board(Board *b);
 void from_fen(Board *b, char *fen);

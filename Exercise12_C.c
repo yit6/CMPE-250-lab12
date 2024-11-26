@@ -16,14 +16,9 @@
 #include "Exercise12_C.h"
 
 Board b;
-char perft_print[40];
-
-void print_moves(int i, Move m) {
-	PutNumHex(i);
-	puts(":	");
-	print_move(&m);
-	puts("\r\n");
-}
+char buffer[40];
+Move m;
+unsigned long long perft_num;
 
 unsigned int seed = 1;
 
@@ -33,10 +28,6 @@ unsigned int random() {
 }
 
 int main (void) {
-	
-	Move m;
-	char move_buffer[10];
-	unsigned long long perft_num;
 	
   __asm("CPSID   I");
 	
@@ -51,19 +42,14 @@ int main (void) {
   for (;;) {
 		print_board(&b);
 		
-		//sprintf(perft_print, "Eval: %d, internal board: %d\r\n", evaluate(&b), b.pst_eval);
-		//puts(perft_print);
+		GetStringSB(buffer, 40);
+		m = parse_move(buffer);
 		
-		//for_each_legal(&b, print_moves);
-		
-		GetStringSB(move_buffer, 10);
-		m = parse_move(move_buffer);
-		
-		if (*move_buffer == 'u') {
+		if (*buffer == 'u') {
 			make_unmove(&b);
 			continue;
 		}
-		if (*move_buffer == 'r') {
+		if (*buffer == 'r') {
 			m = random_move(&b);
 			puts("Doing: ");
 			print_move(&m);
@@ -71,25 +57,26 @@ int main (void) {
 			make_move(&b, &m);
 			continue;
 		}
-		if (*move_buffer == 'p') {
-			perft_num = perft(&b, move_buffer[1]-'0');
-			sprintf(perft_print, "\r\n%lld nodes.\r\n", perft_num);
-			puts(perft_print);
+		if (*buffer == 'p') {
+			perft_num = perft(&b, buffer[1]-'0');
+			sprintf(buffer, "\r\n%lld nodes.\r\n", perft_num);
+			puts(buffer);
 			continue;
 		}
-		if (*move_buffer == 'm') {
+		if (*buffer == 'm') {
 			Move engine_move = best_move(&b);
 			print_move(&engine_move);
 			make_move(&b,&engine_move);
 			PutStringSB("\r\n",255);
 			continue;
 		}
-		if(*move_buffer == 'X') { //spingbob
+
+		if(*buffer == 'X') { //spingbob
 			UInt32 rgb = 0;
-			int succ = sscanf(move_buffer + 1, "%X", &rgb);
+			int succ = sscanf(buffer + 1, "%X", &rgb);
 			set_RGB(rgb);
 			PutNumHex(succ);
-			puts(move_buffer);
+			puts(buffer);
 			puts("\r\n");
 			continue;
 		}
@@ -111,10 +98,5 @@ int main (void) {
 		}
 		
 		make_move(&b, &m);
-		/*if(is_gameover(&b)) {
-			puts("Game Over\r\n");
-		} else {
-			puts("Game NOT Over\r\n");
-		}*/
 	}
 }
