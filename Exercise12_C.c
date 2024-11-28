@@ -15,39 +15,31 @@
 
 #include "Exercise12_C.h"
 
+#define gets(buf) GetStringSB(buf, 72)
+
 Board b;
-char buffer[40];
+char buffer[72];
 Move m;
 unsigned long long perft_num;
 
 unsigned int seed = 1;
 extern char rainbowCycle;
 
+Color playerColor;
+
 unsigned int random() {
 	seed = seed * 33456789 + 2345600078l;
 	return seed;
 }
 
-int main (void) {
-	
+void one_player_game(void) {
 	char mateState = 0;
 	UInt32 rgb;
 	
-  __asm("CPSID   I");
-	
-  Init_UART0_IRQ();
-	init_TPM();
-	init_PIT();
-	
-  __asm("CPSIE   I");
-		
-	new_board(&b);
-	//from_fen(&b, "2Q2bnr/4p1pq/5pkr/7p/7P/4P3/PPPP1PP1/RNB1KBNR w KQ - 0 1");
-
-  while (!mateState) {
+	while (!mateState) {
 		print_board(&b);
 		
-		GetStringSB(buffer, 40);
+		gets(buffer);
 		m = parse_move(buffer);
 		
 		if (*buffer == 'u') {
@@ -72,7 +64,7 @@ int main (void) {
 			Move engine_move = best_move(&b);
 			print_move(&engine_move);
 			make_move(&b,&engine_move);
-			PutStringSB("\r\n",255);
+			puts("\r\n");
 			continue;
 		}
 
@@ -117,5 +109,92 @@ int main (void) {
 		}
 		set_RGB(rgb);
 	}
-	for(;;); //without this the program can and will stop accepting interrupts and prints will not finish
+}
+
+void two_player_game(void) {
+	char mateState = 0;
+	UInt32 rgb;
+	
+	while (!mateState) {
+		print_board(&b);
+		
+		gets(buffer);
+		m = parse_move(buffer);
+		
+		if (*buffer == 'u') { //modify for takebacks
+			make_unmove(&b);
+			continue;
+		}
+		if (*buffer == 'r') {
+			m = random_move(&b);
+			puts("Doing: ");
+			print_move(&m);
+			puts("\r\n");
+			make_move(&b, &m);
+			continue;
+		}
+		
+		print_move(&m);
+		puts("\r\n");
+		
+		if (is_legal(&b, &m)) {
+			UInt32 turn = b.current_turn;
+			UInt32 rizzy = 0xFF << (8 & (-(turn ^ 1)));//blue if white's turn, green if black's turn
+			puts("Legal!\r\n");
+			rgb = rizzy;
+		} else {
+			puts("Not Legal!\r\n");
+			rgb = RED_MASK;
+			continue;
+		}
+		
+		make_move(&b, &m);
+		
+		mateState = get_mate_state(&b);
+		if(mateState == 1) {
+			puts("White wins!\r\n");
+			rainbowCycle = 1;
+		} else if(mateState == 2) {
+			puts("Black wins!\r\n");
+			rainbowCycle = 1;
+		} else if(mateState == 3) {
+			rgb = 0x33FF00;
+			puts("Stalemate\r\n");
+		}
+		set_RGB(rgb);
+	}
+}
+
+int main (void) {
+	
+  __asm("CPSID   I");
+	
+  Init_UART0_IRQ();
+	init_TPM();
+	init_PIT();
+	
+  __asm("CPSIE   I");
+	
+	for(;;) {
+		puts("Welcome to the Frankly Unnecessary Chess Kernel\r\n");
+		puts("Hit enter to play on a new board or enter FEN notation:\r\n");
+		
+		gets(buffer);
+		
+		if(*buffer == 0) {
+			new_board(&b);
+		} else {
+			from_fen(&b, buffer);
+		}
+		
+		puts("Would you like to play as (W)hite, (B)lack, or (T)wo players?");
+		
+		gets(buffer);
+		if(*buffer == 'T' || *buffer == 't') {
+			two_player_game();
+		} else {
+			playerColor = (*buffer == 'B' || *buffer == 'b'); //defaults to white if nothing is input
+			one_player_game();
+		}
+	}
 }
