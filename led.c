@@ -1,6 +1,8 @@
 #include "Exercise12_C.h"
 #include "MKL05Z4.h"
 
+#include <math.h>
+
 /* Port B pin 7 symbols */
 #define SET_TO_TPM (PORT_PCR_ISF_MASK | (2u << PORT_PCR_MUX_SHIFT))
 /* SIM_SOPT2 symbols */
@@ -21,6 +23,60 @@ TPM_SC_PS_DIV16)
 #define TPM_CnSC_PWMH (TPM_CnSC_MSB_MASK | \
 TPM_CnSC_ELSB_MASK)
 
+//PIT things
+
+#define PIT_IRQ_NUMBER (22)
+/*------------------------------------------------------------*/
+/* NVIC_ICPR                                                  */
+/* 31-00:CLRPEND=pending status for HW IRQ sources;           */
+/*              read:   0 = not pending;  1 = pending         */
+/*              write:  0 = no effect;                        */
+/*                      1 = change status to not pending      */
+/* 22:PIT IRQ pending status                                  */
+/*------------------------------------------------------------*/
+#define NVIC_ICPR_PIT_MASK (1 << PIT_IRQ_NUMBER)
+/*------------------------------------------------------------*/
+/* NVIC_IPR0-NVIC_IPR7                                        */
+/* 2-bit priority:  0 = highest; 3 = lowest                   */
+/*------------------------------------------------------------*/
+#define PIT_IRQ_PRIORITY (0)
+#define PIT_IPR_REGISTER (PIT_IRQ_NUMBER >> 2)
+#define NVIC_IPR_PIT_MASK \
+                      (3 << (((PIT_IRQ_NUMBER & 3) << 3) + 6))
+/*------------------------------------------------------------*/
+/* NVIC_ISER                                                  */
+/* 31-00:SETENA=masks for HW IRQ sources;                     */
+/*              read:   0 = masked;     1 = unmasked          */
+/*              write:  0 = no effect;  1 = unmask            */
+/* 22:PIT IRQ mask                                            */
+/*------------------------------------------------------------*/
+#define NVIC_ISER_PIT_MASK (1 << PIT_IRQ_NUMBER)
+/*------------------------------------------------------------*/
+/* PIT_LDVALn                                                 */
+/* Clock ticks for 0.01 s = 10 ms at 24 MHz PIT clock rate    */
+/* 0.01 s * 24,000,000 Hz = 240,000                           */
+/* TSV = 240,000 - 1 = 239,999                                */
+/* Clock ticks for 0.01 s at 23,986,176 Hz count rate         */
+/* 0.01 s * 23,986,176 Hz = 239,862                           */
+/* TSV = 239,862 - 1 = 239,861                                */
+/*------------------------------------------------------------*/
+#define PIT_LDVAL_10ms  (239861u)
+/*------------------------------------------------------------*/
+/* PIT_MCR:  PIT module control register                      */
+/* 1-->    0:FRZ=freeze (continue'/stop in debug mode)        */
+/* 0-->    1:MDIS=module disable (PIT section)                */
+/*                RTI timer not affected                      */
+/*                must be enabled before any other PIT setup  */
+/*------------------------------------------------------------*/
+#define PIT_MCR_EN_FRZ  (PIT_MCR_FRZ_MASK)
+/*------------------------------------------------------------*/
+/* PIT_TCTRL:  timer control register                         */
+/* 0-->   2:CHN=chain mode (enable)                           */
+/* 1-->   1:TIE=timer interrupt enable                        */
+/* 1-->   0:TEN=timer enable                                  */
+/*------------------------------------------------------------*/
+#define PIT_TCTRL_CH_IE  (PIT_TCTRL_TEN_MASK | PIT_TCTRL_TIE_MASK)
+
 //LED things
 
 #define MAX_BRIGHTNESS TPM_MOD_PWM_PERIOD_10ms
@@ -36,6 +92,9 @@ TPM_CnSC_ELSB_MASK)
 
 #define PORT_PCR_MUX_SELECT_1_MASK (1 << PORT_PCR_MUX_SHIFT)
 #define PORT_PCR_SET_GPIO (PORT_PCR_ISF_MASK | PORT_PCR_MUX_SELECT_1_MASK)
+
+UInt32 rainbowCounter = 0;
+char rainbowCycle = 0;
 
 void init_TPM(void) {
   SIM->SOPT2 &= ~SIM_SOPT2_TPMSRC_MASK;
@@ -55,6 +114,54 @@ void init_TPM(void) {
 	TPM0->CONTROLS[1].CnSC = TPM_CnSC_PWMH;
   TPM0->CONTROLS[1].CnV = MAX_BRIGHTNESS;
   TPM0->SC = TPM_SC_CLK_DIV16;
+}
+
+//Mostly taken from Lab10 materials (the equivalent C project)
+void init_PIT(void) {
+  /* Enable PIT module clock */
+  SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
+  /* Disable PIT Timer 0 */
+  PIT->CHANNEL[0].TCTRL &= ~PIT_TCTRL_TEN_MASK;
+  /* Set PIT interrupt priority to 0 (highest) */
+  NVIC->IP[PIT_IPR_REGISTER] &= NVIC_IPR_PIT_MASK;
+  /* Clear any pending PIT interrupts */
+  NVIC->ICPR[0] = NVIC_ICPR_PIT_MASK;
+  /* Unmask UART0 interrupts */
+  NVIC->ISER[0] = NVIC_ISER_PIT_MASK;
+  /* Enable PIT timer module */
+  /* and set to stop in debug mode */
+  PIT->MCR = PIT_MCR_EN_FRZ;
+  /* Set PIT Timer 0 period for 0.01 s */
+  PIT->CHANNEL[0].LDVAL = PIT_LDVAL_10ms;
+  /* Enable PIT Timer 0 and interrupt */
+  PIT->CHANNEL[0].TCTRL = PIT_TCTRL_CH_IE;
+}
+
+UInt32 hueToRGB(float hue) {
+	float kr = fmodf(5 + hue * 6, 6);
+	float kg = fmodf(3 + hue * 6, 6);
+	float kb = fmodf(1 + hue * 6, 6);
+	
+	float r = 1 - fmax(fmin(fmin(kr, 4 - kr), 1), 0);
+	float g = 1 - fmax(fmin(fmin(kg, 4 - kg), 1), 0);
+	float b = 1 - fmax(fmin(fmin(kb, 4 - kb), 1), 0);
+	
+	UInt32 ir = (r * 255.f * 0.2f);
+	UInt32 ig = (g * 255.f);
+	UInt32 ib = (b * 255.f);
+	
+	return (ir << 16) | (ig << 8) | (ib);
+}
+
+void PIT_IRQHandler (void) {
+  __asm("CPSID   I");  /* mask interrupts */
+	if(rainbowCycle) {
+		rainbowCounter++;
+		set_RGB(hueToRGB((float) rainbowCounter * 0.004f));	
+	}
+	/* clear PIT timer 0 interrupt flag */
+  PIT->CHANNEL[0].TFLG = PIT_TFLG_TIF_MASK;
+  __asm("CPSIE   I");  /* unmask interrupts */
 }
 
 //haha yeah

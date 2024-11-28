@@ -114,4 +114,6 @@ void PutStringSB (char String[], int StringBufferCapacity);
 #define BLUE_MASK 0x0000FF
 
 void init_TPM(void);
+void init_PIT(void);
 void set_RGB(UInt32 rgb); //0 through 9
+void rainbow_ISR();

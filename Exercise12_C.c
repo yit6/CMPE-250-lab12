@@ -21,6 +21,7 @@ Move m;
 unsigned long long perft_num;
 
 unsigned int seed = 1;
+extern char rainbowCycle;
 
 unsigned int random() {
 	seed = seed * 33456789 + 2345600078;
@@ -33,6 +34,7 @@ int main (void) {
 	
   Init_UART0_IRQ();
 	init_TPM();
+	init_PIT();
 	
   __asm("CPSIE   I");
 		
@@ -78,6 +80,11 @@ int main (void) {
 			PutNumHex(succ);
 			puts(buffer);
 			puts("\r\n");
+			continue;
+		}
+		
+		if(*buffer == 'R') {
+			rainbowCycle = !rainbowCycle;
 			continue;
 		}
 		
