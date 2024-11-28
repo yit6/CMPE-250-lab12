@@ -229,6 +229,7 @@ char is_check(Board *b, Color c) {
 // 0 for illegal, 1 for legal
 char is_legal(Board *b, Move *m) {
 	char check;
+	char sliding = 1;
 	signed char x, y, dx, dy, sx, sy;
 	Piece piece, target;
 	
@@ -271,9 +272,7 @@ char is_legal(Board *b, Move *m) {
 	
 	dx = abs(dx);
 	dy = abs(dy);
-	
-	char sliding = 1;
-	
+		
 	// Check piece movement, return false if invalid
 	// and true for valid moves for non-sliding pieces
 	switch (piece.type) {
@@ -734,4 +733,16 @@ char is_gameover(Board *b) {
 	gameoverStatus = 1;
 	for_each_legal(b, _gameover_helper);
 	return gameoverStatus;
+}
+
+//returns 0 for normal play, 1 for white checkmate, 2 for black checkmate, 3 for stalemate
+char get_mate_state(Board *b) {
+	if(!is_gameover(b)) {
+		return 0;
+	} else {
+		char ret = 3;
+		ret ^= (is_check(b, White));
+		ret ^= (is_check(b, Black) << 1);
+		return ret;
+	}
 }

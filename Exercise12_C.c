@@ -24,11 +24,14 @@ unsigned int seed = 1;
 extern char rainbowCycle;
 
 unsigned int random() {
-	seed = seed * 33456789 + 2345600078;
+	seed = seed * 33456789 + 2345600078l;
 	return seed;
 }
 
 int main (void) {
+	
+	char mateState = 0;
+	UInt32 rgb;
 	
   __asm("CPSID   I");
 	
@@ -39,9 +42,9 @@ int main (void) {
   __asm("CPSIE   I");
 		
 	new_board(&b);
-	//from_fen(&b, "NKbqkbnr/PPRp1pPP/PN1R4/P3p1BQ/2B1P3/3P4/8/8 w k - 0 1");
+	//from_fen(&b, "2Q2bnr/4p1pq/5pkr/7p/7P/4P3/PPPP1PP1/RNB1KBNR w KQ - 0 1");
 
-  for (;;) {
+  while (!mateState) {
 		print_board(&b);
 		
 		GetStringSB(buffer, 40);
@@ -74,10 +77,7 @@ int main (void) {
 		}
 
 		if(*buffer == 'X') { //spingbob
-			UInt32 rgb = 0;
 			int succ = sscanf(buffer + 1, "%X", &rgb);
-			set_RGB(rgb);
-			PutNumHex(succ);
 			puts(buffer);
 			puts("\r\n");
 			continue;
@@ -93,17 +93,29 @@ int main (void) {
 		
 		if (is_legal(&b, &m)) {
 			UInt32 turn = b.current_turn;
-			//UInt32 ledMask = ((-(b.current_turn ^ 0x1)) ^ GREEN_MASK) | ((-b.current_turn) & BLUE_MASK); // only blue mask if users turn, only green mask if engines turn
-			UInt32 rizzy = 0xFF << (8 & (-(turn ^ 1)));
-			PutNumHex(rizzy);
+			UInt32 rizzy = 0xFF << (8 & (-(turn ^ 1)));//blue if white's turn, green if black's turn
 			puts("Legal!\r\n");
-			set_RGB(rizzy);
+			rgb = rizzy;
 		} else {
 			puts("Not Legal!\r\n");
-			set_RGB(RED_MASK);
+			rgb = RED_MASK;
 			continue;
 		}
 		
 		make_move(&b, &m);
+		
+		mateState = get_mate_state(&b);
+		if(mateState == 1) {
+			puts("Player wins!\r\n");
+			rainbowCycle = 1;
+		} else if(mateState == 2) {
+			puts("Engine wins!\r\n");
+			rgb = 0x000000;
+		} else if(mateState == 3) {
+			rgb = 0x33FF00;
+			puts("Stalemate\r\n");
+		}
+		set_RGB(rgb);
 	}
+	for(;;); //without this the program can and will stop accepting interrupts and prints will not finish
 }

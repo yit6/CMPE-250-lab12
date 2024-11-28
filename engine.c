@@ -92,9 +92,11 @@ Board *engine_board;
 void _minimax(void);
 
 void _best_move(int i, Move m) {
+	short eval;
+	
 	make_move(engine_board, &m);
 	
-	short eval = minimax(engine_board, 3);
+	eval = minimax(engine_board, 3);
 	
 	if (engine_board->current_turn==White) { eval = 0-eval; }
 	

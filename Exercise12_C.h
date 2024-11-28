@@ -63,6 +63,9 @@ typedef struct board {
 
 extern const short piece_square[7][8][8];
 
+#define GAMEOVER_MASK 0x1
+#define CHECK_MASK 0x2
+
 void new_board(Board *b);
 void from_fen(Board *b, char *fen);
 void print_board(Board *b);
@@ -74,6 +77,7 @@ void make_unmove(Board *b);
 void for_each_legal(Board *b, void f(int i, Move m));
 short evaluate(Board *b);
 char is_gameover(Board *b);
+char get_mate_state(Board *b);
 
 Move random_move(Board *b);
 unsigned int random(void);
@@ -116,4 +120,4 @@ void PutStringSB (char String[], int StringBufferCapacity);
 void init_TPM(void);
 void init_PIT(void);
 void set_RGB(UInt32 rgb); //0 through 9
-void rainbow_ISR();
+void rainbow_ISR(void);
