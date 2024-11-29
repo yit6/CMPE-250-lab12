@@ -39,59 +39,43 @@ void one_player_game(void) {
 	while (!mateState) {
 		print_board(&b);
 		
-		gets(buffer);
-		m = parse_move(buffer);
-		
-		if (*buffer == 'u') {
-			make_unmove(&b);
-			continue;
-		}
-		if (*buffer == 'r') {
-			m = random_move(&b);
-			puts("Doing: ");
+		if(b.current_turn == playerColor) {
+			gets(buffer);
+			m = parse_move(buffer);
+			
+			if (*buffer == 'u') {
+				make_unmove(&b);
+				continue;
+			}
+			if (*buffer == 'r') {
+				m = random_move(&b);
+				puts("Doing: ");
+				print_move(&m);
+				puts("\r\n");
+				make_move(&b, &m);
+				continue;
+			}
+			
+			puts("Your Move: ");
 			print_move(&m);
 			puts("\r\n");
-			make_move(&b, &m);
-			continue;
-		}
-		if (*buffer == 'p') {
-			perft_num = perft(&b, buffer[1]-'0');
-			sprintf(buffer, "\r\n%lld nodes.\r\n", perft_num);
-			puts(buffer);
-			continue;
-		}
-		if (*buffer == 'm') {
-			Move engine_move = best_move(&b);
-			print_move(&engine_move);
-			make_move(&b,&engine_move);
-			puts("\r\n");
-			continue;
-		}
-
-		if(*buffer == 'X') { //spingbob
-			int succ = sscanf(buffer + 1, "%X", &rgb);
-			puts(buffer);
-			puts("\r\n");
-			continue;
-		}
-		
-		if(*buffer == 'R') {
-			rainbowCycle = !rainbowCycle;
-			continue;
-		}
-		
-		print_move(&m);
-		puts("\r\n");
-		
-		if (is_legal(&b, &m)) {
-			UInt32 turn = b.current_turn;
-			UInt32 rizzy = 0xFF << (8 & (-(turn ^ 1)));//blue if white's turn, green if black's turn
-			puts("Legal!\r\n");
-			rgb = rizzy;
+			
+			if (is_legal(&b, &m)) {
+				UInt32 turn = b.current_turn;
+				UInt32 rizzy = 0xFF << (8 & (-(turn ^ 1)));//blue if white's turn, green if black's turn
+				puts("Legal!\r\n");
+				rgb = rizzy;
+			} else {
+				puts("Not Legal!\r\n");
+				rgb = RED_MASK;
+				continue;
+			}
 		} else {
-			puts("Not Legal!\r\n");
-			rgb = RED_MASK;
-			continue;
+			Move engine_move = best_move(&b);
+			puts("Engine Move: ");
+			print_move(&engine_move);
+			m = engine_move;
+			puts("\r\n");
 		}
 		
 		make_move(&b, &m);
@@ -109,6 +93,7 @@ void one_player_game(void) {
 		}
 		set_RGB(rgb);
 	}
+	print_board(&b);
 }
 
 void two_player_game(void) {
@@ -163,6 +148,79 @@ void two_player_game(void) {
 		}
 		set_RGB(rgb);
 	}
+	print_board(&b);
+}
+
+void debug_game(void) {
+	char mateState = 0;
+	UInt32 rgb;
+	
+	while (!mateState) {
+		print_board(&b);
+		
+		gets(buffer);
+		
+		m = parse_move(buffer);
+		
+		if (*buffer == 'u') {
+			make_unmove(&b);
+			continue;
+		}
+		if (*buffer == 'r') {
+			m = random_move(&b);
+			puts("Doing: ");
+			print_move(&m);
+			puts("\r\n");
+			make_move(&b, &m);
+			continue;
+		}
+		if (*buffer == 'p') {
+			perft_num = perft(&b, buffer[1]-'0');
+			sprintf(buffer, "\r\n%lld nodes.\r\n", perft_num);
+			puts(buffer);
+			continue;
+		}
+		if (*buffer == 'm') {
+			Move engine_move = best_move(&b);
+			print_move(&engine_move);
+			make_move(&b,&engine_move);
+			puts("\r\n");
+			continue;
+		}
+		if(*buffer == 'X') { //spingbob
+			int succ = sscanf(buffer + 1, "%X", &rgb);
+			puts(buffer);
+			puts("\r\n");
+			continue;
+		}
+		if(*buffer == 'R') {
+			rainbowCycle = !rainbowCycle;
+			continue;
+		}
+		
+		print_move(&m);
+		puts("\r\n");
+		
+		if (is_legal(&b, &m)) {
+			puts("Legal!\r\n");
+		} else {
+			puts("Not Legal!\r\n");
+			continue;
+		}
+		
+		make_move(&b, &m);
+	
+		mateState = get_mate_state(&b);
+		if(mateState == 1) {
+			puts("Player wins!\r\n");
+		} else if(mateState == 2) {
+			puts("Engine wins!\r\n");
+		} else if(mateState == 3) {
+			puts("Stalemate\r\n");
+		}
+		set_RGB(rgb);
+	}
+	print_board(&b);
 }
 
 int main (void) {
@@ -187,10 +245,12 @@ int main (void) {
 			from_fen(&b, buffer);
 		}
 		
-		puts("Would you like to play as (W)hite, (B)lack, or (T)wo players?");
+		puts("Would you like to play as (W)hite, (B)lack, or (T)wo players? ");
 		
 		gets(buffer);
-		if(*buffer == 'T' || *buffer == 't') {
+		if(*buffer == 'D' || *buffer == 'd') {
+			debug_game();
+		} else if(*buffer == 'T' || *buffer == 't') {
 			two_player_game();
 		} else {
 			playerColor = (*buffer == 'B' || *buffer == 'b'); //defaults to white if nothing is input
