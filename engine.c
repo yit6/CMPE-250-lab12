@@ -98,9 +98,7 @@ void _best_move(int i, Move m) {
 	
 	eval = minimax(engine_board, 3);
 	
-	if (engine_board->current_turn==White) { eval = 0-eval; }
-	
-	if (i == 0 || eval > best_eval) {
+	if (i == 0 || (eval < best_eval && engine_board->current_turn==White) || (eval > best_eval && engine_board->current_turn==Black)) {
 		best_eval = eval;
 		best = m;
 	}
@@ -118,15 +116,41 @@ Move best_move(Board *board) {
 }
 
 short minimax_evals[5] = { -5 };
+short minimax_alpha[5] = { -5 };
+short minimax_beta [5] = { -5 };
+char minimax_flag;
 char minimax_depth;
 
 void _minimax_helper(int i, Move m) {
+	if (minimax_flag) { return; }
 	make_move(engine_board, &m);
 	
 	_minimax();
 	
 	if (i == 0 || (engine_board->current_turn == White && minimax_evals[minimax_depth+1] > minimax_evals[minimax_depth]) || (engine_board->current_turn == Black && minimax_evals[minimax_depth+1] < minimax_evals[minimax_depth])) {		
 		minimax_evals[minimax_depth+1] = minimax_evals[minimax_depth];
+	}
+	
+	// Maximizing player (white has just tested move, black next)
+	if (engine_board->current_turn == Black) {
+		if (minimax_evals[minimax_depth] > minimax_alpha[minimax_depth]) {
+			minimax_alpha[minimax_depth] = minimax_evals[minimax_depth];
+		}
+		
+		if (minimax_evals[minimax_depth] >= minimax_beta[minimax_depth]) {
+			minimax_flag = 1;
+		}
+	}
+	
+	// Minimizing player (black has just tested a move, white next)
+	else if (engine_board->current_turn == White) {
+		if (minimax_evals[minimax_depth] < minimax_beta[minimax_depth]) {
+			minimax_beta[minimax_depth] = minimax_evals[minimax_depth];
+		}
+		
+		if (minimax_evals[minimax_depth] <= minimax_alpha[minimax_depth]) {
+			minimax_flag = 1;
+		}
 	}
 	
 	make_unmove(engine_board);
@@ -139,8 +163,17 @@ void _minimax(void) {
 		return;
 	}
 	
+	// This value will not be overwritten is there are no moves
+	minimax_evals[minimax_depth] = (engine_board->current_turn==White)?0x8000:0x7FFF;
+	//if (!is_check(engine_board, engine_board->current_turn)) { minimax_evals[minimax_depth] = 0; }
+	
+	// Pass alpha and beta to next ply
+	minimax_alpha[minimax_depth-1] = minimax_alpha[minimax_depth];
+	minimax_beta [minimax_depth-1] = minimax_beta [minimax_depth];
+	
 	minimax_depth--;
 	
+	minimax_flag = 0;
 	for_each_legal(engine_board, _minimax_helper);
 	
 	minimax_depth++;
@@ -149,6 +182,8 @@ void _minimax(void) {
 short minimax(Board *b, char depth) {
 	engine_board = b;
 	minimax_depth = depth;
+	minimax_alpha[minimax_depth-1] = 0x7FFF;
+	minimax_beta [minimax_depth-1] = 0x8000;
 	_minimax();
 	return minimax_evals[depth];
 }

@@ -52,10 +52,10 @@ void print_board(Board *b) {
 	}
 	puts(files+2);
 	
-	//if (b->castling_rights.white_kingside)  { PutChar('K'); }
-	//if (b->castling_rights.white_queenside) { PutChar('Q'); }
-	//if (b->castling_rights.black_kingside)  { PutChar('k'); }
-	//if (b->castling_rights.black_queenside) { PutChar('q'); }	
+	if (b->castling_rights.white_kingside)  { PutChar('K'); }
+	if (b->castling_rights.white_queenside) { PutChar('Q'); }
+	if (b->castling_rights.black_kingside)  { PutChar('k'); }
+	if (b->castling_rights.black_queenside) { PutChar('q'); }	
 	
 	puts(b->current_turn==White?"White":"Black");
 	puts(" to move\r\n");
