@@ -7,6 +7,14 @@ void new_board(Board *b) {
 	int i;
 	
 	Piece p;
+	
+	p.type = None;
+	
+	for (i = 0; i < 8; b->board[2][i++] = p);
+	for (i = 0; i < 8; b->board[3][i++] = p);
+	for (i = 0; i < 8; b->board[4][i++] = p);
+	for (i = 0; i < 8; b->board[5][i++] = p);
+	
 	p.color = White;
 	p.type = Pawn;
 	
