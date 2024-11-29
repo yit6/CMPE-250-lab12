@@ -239,6 +239,8 @@ int main (void) {
 		
 		gets(buffer);
 		
+		rainbowCycle = 0;
+		
 		if(*buffer == 0) {
 			new_board(&b);
 		} else {
