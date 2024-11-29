@@ -293,6 +293,9 @@ char is_legal(Board *b, Move *m) {
 				if (target.type != None) { return 0; }
 				if (sy != (piece.color==White?1:-1)) { return 0; }
 				if (dy == 2) {
+					// Has to leave from starting rank
+					if (m->soure_rank != (piece.color==White?1:6)) { return 0; }
+					
 					// Can't jump over piece
 					int t = (m->soure_rank+m->destination_rank)/2;
 					if (b->board[t][m->soure_file].type != None) { return 0; }
