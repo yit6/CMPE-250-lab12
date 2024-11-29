@@ -297,8 +297,7 @@ char is_legal(Board *b, Move *m) {
 					if (m->soure_rank != (piece.color==White?1:6)) { return 0; }
 					
 					// Can't jump over piece
-					int t = (m->soure_rank+m->destination_rank)/2;
-					if (b->board[t][m->soure_file].type != None) { return 0; }
+					if (b->board[(m->soure_rank+m->destination_rank)/2][m->soure_file].type != None) { return 0; }
 					break;
 				}
 				if (dy != 1) { return 0; }
@@ -356,9 +355,7 @@ char is_legal(Board *b, Move *m) {
 				if (is_attacked(b, b->current_turn^1, m->soure_rank, (m->soure_file+m->destination_file)/2)) {
 					return 0;
 				}
-			}
-			
-			if (dx > 1 || dy > 1) { return 0;}
+			} else if (dx > 1 || dy > 1) { return 0;}
 			break;
 	}
 	
