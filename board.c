@@ -111,12 +111,31 @@ void from_fen(Board *b, char *fen) {
 		b->board[rank][file++] = p;
 	}
 	
-	b->castling_rights.white_kingside = 1;
-	b->castling_rights.white_queenside = 1;
-	b->castling_rights.black_kingside = 1;
-	b->castling_rights.black_queenside = 1;
+	if (*fen == 'w') {
+		b->current_turn = White;
+	} else {
+		b->current_turn = Black;
+	}
+	
+	b->castling_rights.white_kingside = 0;
+	b->castling_rights.white_queenside = 0;
+	b->castling_rights.black_kingside = 0;
+	b->castling_rights.black_queenside = 0;
 	
 	b->en_pas_file = -1;
+	
+	fen++;
+	
+	while ((c = *fen++)) {
+		if (c == 'K') { b->castling_rights.white_kingside  = 1; }
+		if (c == 'Q') { b->castling_rights.white_queenside = 1; }
+		if (c == 'k') { b->castling_rights.black_kingside  = 1; }
+		if (c == 'q') { b->castling_rights.black_queenside = 1; }
+		
+		if ('a' <= c && c <= 'h') {
+			b->en_pas_file = c-'a';
+		}
+	}
 	
 	b->ply = 0;
 	
