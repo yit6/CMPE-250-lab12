@@ -115,9 +115,13 @@ Move best_move(Board *board) {
 	return best;
 }
 
+// I have no idea why this need to be initialized
+// with a nonzero value, these should be assigned
+// before they get read by the minimax code below
 short minimax_evals[5] = { -5 };
 short minimax_alpha[5] = { -5 };
 short minimax_beta [5] = { -5 };
+
 char minimax_flag;
 char minimax_depth;
 
@@ -137,6 +141,7 @@ void _minimax_helper(int i, Move m) {
 			minimax_alpha[minimax_depth] = minimax_evals[minimax_depth];
 		}
 		
+		// Beta cutoff
 		if (minimax_evals[minimax_depth] >= minimax_beta[minimax_depth]) {
 			minimax_flag = 1;
 		}
@@ -148,6 +153,7 @@ void _minimax_helper(int i, Move m) {
 			minimax_beta[minimax_depth] = minimax_evals[minimax_depth];
 		}
 		
+		// Alpha cutoff
 		if (minimax_evals[minimax_depth] <= minimax_alpha[minimax_depth]) {
 			minimax_flag = 1;
 		}
@@ -173,8 +179,8 @@ void _minimax(void) {
 	
 	minimax_depth--;
 	
-	minimax_flag = 0;
 	for_each_legal(engine_board, _minimax_helper);
+	minimax_flag = 0;
 	
 	minimax_depth++;
 }
@@ -182,8 +188,8 @@ void _minimax(void) {
 short minimax(Board *b, char depth) {
 	engine_board = b;
 	minimax_depth = depth;
-	minimax_alpha[minimax_depth-1] = 0x7FFF;
-	minimax_beta [minimax_depth-1] = 0x8000;
+	minimax_alpha[minimax_depth] = 0x8000;
+	minimax_beta [minimax_depth] = 0x7FFF;
 	_minimax();
 	return minimax_evals[depth];
 }
