@@ -46,6 +46,8 @@ struct game_history {
 	short pst_eval;
 };
 
+#define HIST_AMT 200
+
 // board[rank][file],
 // A file is 0, 1st rank is 0
 typedef struct board {
@@ -56,7 +58,7 @@ typedef struct board {
 	char en_pas_file; // -1 for no en pas
 	
 	int ply;
-	struct game_history hist[100];
+	struct game_history hist[HIST_AMT];
 	
 	short pst_eval;
 } Board;

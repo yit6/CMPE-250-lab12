@@ -387,6 +387,7 @@ void make_move(Board *b, Move *m) {
 	hist.pst_eval = b->pst_eval;
 	
 	b->hist[b->ply++] = hist;
+	if (b->ply == HIST_AMT) { b->ply = 0; }
 	
 	// En Passant
 	if (b->board[m->soure_rank][m->soure_file].type == Pawn && m->destination_file == b->en_pas_file && m->destination_rank == (b->current_turn==White?2:5)) {
@@ -493,6 +494,7 @@ void make_unmove(Board *b) {
 	
 	b->current_turn ^= 1;
 	
+	if (b->ply == 0) { b->ply = HIST_AMT; }
 	hist = b->hist[--(b->ply)];
 	m = hist.move;
 	b->castling_rights = hist.castling_rights;
