@@ -70,7 +70,6 @@ extern const short piece_square[7][8][8];
 
 void new_board(Board *b);
 void from_fen(Board *b, char *fen);
-void print_board(Board *b);
 char is_attacked(Board *n, Color color, char rank, char file);
 char is_check(Board *b, Color c);
 char is_legal(Board *b, Move *m);
@@ -86,6 +85,8 @@ unsigned int random(void);
 
 Move parse_move(char *uci);
 void print_move(Move *m);
+void print_board(Board *b);
+void pritn_fen(Board *b);
 
 unsigned long long perft(Board *b, int depth);
 
