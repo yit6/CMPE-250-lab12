@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "Exercise12_C.h"
 
 #define P + 100
@@ -89,6 +90,9 @@ Move best;
 short best_eval;
 Board *engine_board;
 
+char num_moves;
+extern char *buffer;
+
 void _minimax(void);
 
 void _best_move(int i, Move m) {
@@ -104,12 +108,37 @@ void _best_move(int i, Move m) {
 	}
 	
 	make_unmove(engine_board);
-	PutChar('.');
+	
+	eval = num_moves - i;
+	
+	PutChar('\r');
+	if (i < 10) { PutChar(' '); }
+	PutNumU(i);
+	PutChar('/');
+	PutNumU(num_moves);
+	
+	PutChar(' ');
+	
+	PutChar('[');
+	while (i--) { PutChar('#'); }
+	while (eval--) { PutChar(' '); }
+	PutChar(']');
+}
+
+void _move_counter(int i, Move m) {
+	num_moves = i+1;
 }
 
 Move best_move(Board *board) {
 	engine_board = board;
+	num_moves = 0;
+	for_each_legal(engine_board, _move_counter);
+	
 	for_each_legal(engine_board, _best_move);
+	
+	PutChar('\r');
+	num_moves += 10;
+	while (num_moves--) { PutChar(' '); }
 	PutChar('\r');
 	
 	return best;
