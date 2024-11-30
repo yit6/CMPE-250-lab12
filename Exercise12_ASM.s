@@ -621,6 +621,72 @@ GS_LoopDone             MOVS    R0,#0
                                 MOVS    R6,R2                   ; move length to R7
                                 POP             {R0,R2,R3,PC}   ; restore registers
                                 ENDP
+;---------------------------------------------------------------
+; Print the number in R0 in base 10
+						EXPORT	PutNumU
+PutNumU                 PROC    {R0-R14}
+                                PUSH    {R0,R1,R2,LR}
+                                MOVS    R1,R0           ; Move R0 into the Dividend
+                                BEQ             PNumZero        ; Print 0 if 0
+                                MOVS    R2,#0           ; Set digit count to zer0
+
+PNumLoop                MOVS    R0,#10
+                                BL              DIVU            ; Divide by 10
+                                PUSH    {R1}            ; Push remainder
+                                ADDS    R2,R2,#1
+                                MOVS    R1,R0           ; Put quotient back into R1
+                                BEQ             PNumStackP      ; If quotient is zero then print the stack
+                                B               PNumLoop
+
+PNumStackP              POP             {R0}            ; Get remaider from stack
+                                ADDS    R0,R0,#'0'      ; Convert remainder to ascii digit
+                                BL              PutChar         ; Print character
+                                SUBS    R2,R2,#1        ; Decrement digit counter
+                                CMP             R2,#0
+                                BEQ             PNumDone
+                                B               PNumStackP
+
+PNumZero                MOVS    R0,#'0'
+                                BL              PutChar
+PNumDone                POP             {R0,R1,R2,PC}
+                                ENDP
+;---------------------------------------------------------------
+; Divide R1 by R0 and put the result into R0 and remainder into R1
+DIVU                            PROC    {R2-R14}
+                        PUSH    {R2,R3,LR}
+                        MOVS    R2,#1                   ; Count number of shifts, start at 1
+                        ADDS    R0,R0,#0                ; Check for div by 0 and clear carry flag
+                        BEQ     DIVU_done               ; If dividing by 0 go to end, 1 already in r2 to set carry
+                        MOVS    R3,#0
+
+; Count how many times it takes to multiply R0 by two until it is >= to R1, or would overflow
+DIVU_shift              CMP     R0,R1
+                        BHS     DIVU_preloop                    ; Check if R0 is bigger than or equal to R1 yet
+                        CMP     R0,#0
+                        BLT     DIVU_preloop                    ; Check if the highest bit of R0 is set, to prevent overflow
+                        LSLS    R0,R0,#1                ; Multiply R0 by 2
+                        ADDS    R2,R2,#1                ; Count the shift
+                                                B       DIVU_shift
+
+; Clear flags
+DIVU_preloop                    ADDS    R2,R2,#0
+
+; subtract powers of two times the divisor however many times it took to shift
+DIVU_loop               BEQ     DIVU_done
+                        LSLS    R3,R3,#1                ; Multiply quotient by 2
+                        CMP     R1,R0                   ; Check if subtraction is possible this loop
+                        BLO     DIVU_skip
+                        ADDS    R3,R3,#1                ; Increment quotient
+                        SUBS    R1,R1,R0                ; Subtract current multiple of divisor
+DIVU_skip               LSRS    R0,R0,#1                ; Divide divisor by 2
+                        SUBS    R2,R2,#1                ; Do the subtraction
+                        B       DIVU_loop
+
+; cleanup
+DIVU_done               LSRS    R2,R2,#1                ; set or clear carry, by design R2 is the proper value for this
+                        MOVS    R0,R3                   ; put the quotient into R0
+                        POP     {R2,R3,PC}              ; restore the stack
+                        ENDP
 
 ;>>>>>   end subroutine code <<<<<
             ALIGN

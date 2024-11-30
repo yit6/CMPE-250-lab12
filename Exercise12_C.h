@@ -109,6 +109,7 @@ void GetStringSB (char String[], int StringBufferCapacity);
 void Init_UART0_IRQ (void);
 void PutChar (char Character);
 void PutNumHex (UInt32);
+void PutNumU (UInt32);
 void PutNumUB (UInt8);
 void PutStringSB (char String[], int StringBufferCapacity);
 
