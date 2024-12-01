@@ -26,6 +26,7 @@ unsigned int seed = 1;
 extern char rainbowCycle;
 
 char player_status;
+char pgn_valid;
 
 unsigned int random() {
 	seed = seed * 33456789 + 2345600078l;
@@ -119,7 +120,7 @@ void play_game(void) {
 			print_move_san(&b, &m);
 			puts("\r\n");
 			make_move(&b, &m);
-			continue;
+			goto game_end_check;
 		}
 		
 		gets(buffer);
@@ -127,12 +128,13 @@ void play_game(void) {
 		
 		if (*buffer == 'u') { //modify for takebacks
 			make_unmove(&b);
+			make_unmove(&b);
 			continue;
 		}
 		if (*buffer == 'r') {
 			m = random_move(&b);
 			puts("Doing: ");
-			print_move(&m);
+			print_move_san(&b, &m);
 			puts("\r\n");
 			make_move(&b, &m);
 			continue;
@@ -149,6 +151,7 @@ void play_game(void) {
 
 		make_move(&b, &m);
 		
+		game_end_check:
 		mateState = get_mate_state(&b);
 		if(mateState == 1) {
 			puts("White wins!\r\n");
@@ -163,6 +166,9 @@ void play_game(void) {
 		}
 	}
 	print_board(&b);
+	
+	if (!pgn_valid) { return; }
+	
 	puts("Export fen? [y/N]: ");
 	gets(buffer);
 	if ((*buffer | 1<<5) == 'y') {
@@ -190,9 +196,10 @@ int main (void) {
 		
 		if(*buffer == 0) {
 			new_board(&b);
+			pgn_valid = 1;
 		} else {
 			from_fen(&b, buffer);
-			print_fen(&b);
+			pgn_valid = 0;
 		}
 		
 		puts("Would you like to play as (W)hite, (B)lack, (T)wo players, or Two (E)ngines? ");
