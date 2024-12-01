@@ -64,6 +64,8 @@ void new_board(Board *b) {
 	p.type = King;
 	b->board[7][4] = p;
 	
+	b->current_turn = White;
+	
 	b->castling_rights.white_kingside = 1;
 	b->castling_rights.white_queenside = 1;
 	b->castling_rights.black_kingside = 1;

@@ -179,20 +179,23 @@ void print_fen(Board *b) {
 
 void print_pgn(Board *b) {
 	int i, j;
-	Move m;
-	i = b->ply;
+	Move moves[HIST_AMT];
+	
+	for (i = 0; i < b->ply; i++) {
+		moves[i] = b->hist[i].move;
+	}
 	
 	new_board(b);
 	
-	for (j = 0; j < i; ++j) {
-		puts((j&1)?"\t":"\r\n");
+	for (j = 0; j < i; j++) {
+		puts((j&1)?"\t\t":"\r\n");
 		if (!(j&1)) {
+			if (((j>>1)+1)>9) { PutChar(' '); }
 			PutNumU((j>>1)+1);
-			puts(". ");
+			puts(".\t");
 		}
-		m = b->hist[j].move;
-		print_move_san(b, &m);
-		make_move(b, &m);
+		print_move_san(b, &moves[j]);
+		make_move(b, &moves[j]);
 	}
 	puts("\r\n\r\n");
 }

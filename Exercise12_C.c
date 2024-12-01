@@ -138,7 +138,7 @@ void play_game(void) {
 			puts("\r\n");
 			make_move(&b, &m);
 			continue;
-		}		
+		}
 		
 		if (!is_legal(&b, &m)) {
 			rgb = RED_MASK;
@@ -169,7 +169,7 @@ void play_game(void) {
 	
 	if (!pgn_valid) { return; }
 	
-	puts("Export fen? [y/N]: ");
+	puts("Export pgn? [y/N]: ");
 	gets(buffer);
 	if ((*buffer | 1<<5) == 'y') {
 		print_pgn(&b);
