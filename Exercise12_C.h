@@ -85,10 +85,13 @@ unsigned int random(void);
 
 Move parse_move(char *uci);
 void print_move(Move *m);
+void print_move_san(Board *b, Move *m);
 void print_board(Board *b);
-void pritn_fen(Board *b);
+void print_fen(Board *b);
+void print_pgn(Board *b);
 
 unsigned long long perft(Board *b, int depth);
+void debug_game(void);
 
 Move best_move(Board *b);
 short minimax(Board *b, char depth);

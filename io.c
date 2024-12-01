@@ -30,6 +30,83 @@ void print_move(Move *m) {
 	if (m->promotion ==  Queen) { PutChar('q'); }
 }
 
+Move _pms_move;
+Board *_pms_board;
+char _pms_type_dest_match;
+char _pms_type_rank_match;
+char _pms_type_file_match;
+PieceType _pms_moved;
+
+void _pms_helper(int i, Move m) {
+	if (_pms_board->board[m.soure_rank][m.soure_file].type != _pms_moved) { return; }
+	if (m.destination_file != _pms_move.destination_file) { return; }
+	if (m.destination_rank != _pms_move.destination_rank) { return; }
+	if (m.promotion != _pms_move.promotion) { return; }
+	
+	_pms_type_dest_match++;
+	
+	if (m.soure_file == _pms_move.soure_file) {
+		_pms_type_file_match++;
+	}
+	
+	if (m.soure_rank == _pms_move.soure_rank) {
+		_pms_type_rank_match++;
+	}
+}
+
+void print_move_san(Board *b, Move *m) {
+	_pms_board = b;
+	_pms_moved = b->board[m->soure_rank][m->soure_file].type;
+	_pms_move = *m;
+	
+	_pms_type_dest_match=-1;
+	_pms_type_rank_match=-1;
+	_pms_type_file_match=-1;
+	
+	if (_pms_moved == King && m->soure_file == 4 && m->destination_file == 6) {
+		puts("O-O");
+		goto check_checkmate;
+	}
+	if (_pms_moved == King && m->soure_file == 4 && m->destination_file == 2) {
+		puts("O-O-O");
+		goto check_checkmate;
+	}
+
+	PutChar("\0\0NBRQK"[_pms_moved]);
+	
+	for_each_legal(b,_pms_helper);
+	
+	if (_pms_type_rank_match && _pms_type_file_match) {
+		PutChar(_pms_move.soure_file+'a');
+		PutChar(_pms_move.soure_rank+'1');
+	} else if (_pms_type_file_match) {
+		PutChar(_pms_move.soure_rank+'1');
+	} else if (_pms_type_dest_match || (_pms_moved == Pawn && b->board[m->destination_rank][m->destination_file].type != None)) {
+		PutChar(_pms_move.soure_file+'a');
+	}
+	
+	if (b->board[m->destination_rank][m->destination_file].type != None) {
+		PutChar('x');
+	}
+	
+	PutChar(m->destination_file+'a');
+	PutChar(m->destination_rank+'1');
+	
+	if (m->promotion != None) {
+		PutChar('=');
+		PutChar(" PNBRQK"[m->promotion]);
+	}
+	
+	check_checkmate:
+	make_move(b,m);
+	
+	if (is_check(b, b->current_turn)) {
+		PutChar(is_gameover(b)?'#':'+');
+	}
+	
+	make_unmove(b);
+}
+
 void print_board(Board *b) {
 	
 	int rank,file;
@@ -98,4 +175,24 @@ void print_fen(Board *b) {
 	puts(" 0 ");
 	
 	PutNumU(b->ply>>2);
+}
+
+void print_pgn(Board *b) {
+	int i, j;
+	Move m;
+	i = b->ply;
+	
+	new_board(b);
+	
+	for (j = 0; j < i; ++j) {
+		puts((j&1)?"\t":"\r\n");
+		if (!(j&1)) {
+			PutNumU((j>>1)+1);
+			puts(". ");
+		}
+		m = b->hist[j].move;
+		print_move_san(b, &m);
+		make_move(b, &m);
+	}
+	puts("\r\n\r\n");
 }
