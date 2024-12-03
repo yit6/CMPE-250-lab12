@@ -126,17 +126,47 @@ void play_game(void) {
 		gets(buffer);
 		m = parse_move(buffer);
 		
-		if (*buffer == 'u') { //modify for takebacks
+		if (*buffer == 'H') {
+			puts(
+			"Frankly Unnecessary Chess Kernel user guide:\r\n\n"
+			"Perform move:      [a-h][1-8][a-h][1-8][nbrq]?\r\n"
+			"Source Destination (Promotion), e.g. e2e4 or e7e8q\r\n\n"
+			"Takeback/Undo:     U\r\n"
+			"Random move:       R\r\n"
+			);
+			puts(
+			"Print current FEN: F\r\n"
+			"Print game PGN:    P\r\n"
+			"Quit game:         Q\r\n"
+			"Help:              H\r\n"
+			);
+		}
+		if (*buffer == 'U') { //modify for takebacks
 			make_unmove(&b);
 			make_unmove(&b);
 			continue;
 		}
-		if (*buffer == 'r') {
+		if (*buffer == 'R') {
 			m = random_move(&b);
 			puts("Doing: ");
 			print_move_san(&b, &m);
 			puts("\r\n");
 			make_move(&b, &m);
+			continue;
+		}
+		if (*buffer == 'F') {
+			print_fen(&b);
+			puts("\r\n");
+			continue;
+		}
+		if (*buffer == 'P') {
+			print_pgn(&b);
+			continue;
+		}
+		if (*buffer == 'Q') {
+			puts("Are you sure? [y/N]: ");
+			gets(buffer);
+			if ((*buffer | 1<<5) == 'y') { return; }
 			continue;
 		}
 		
@@ -187,7 +217,7 @@ int main (void) {
   __asm("CPSIE   I");
 	
 	for(;;) {
-		puts("Welcome to the Frankly Unnecessary Chess Kernel\r\n");
+		puts("\rWelcome to the Frankly Unnecessary Chess Kernel\r\n");
 		puts("Hit enter to play on a new board or enter FEN notation:\r\n");
 		
 		gets(buffer);
