@@ -166,9 +166,11 @@ void print_fen(Board *b) {
 	
 	PutChar(' ');
 	
-	if (b->en_pas_file != -1) {
+	if (b->en_pas_file != 255) {
 		PutChar(b->en_pas_file+'a');
 		PutChar((b->current_turn==White)?'6':'3');
+	} else {
+		PutChar('-');
 	}
 	
 	// We don't currently keep track of 50 move draw
