@@ -46,7 +46,7 @@ struct game_history {
 	short pst_eval;
 };
 
-#define HIST_AMT 200
+#define HIST_AMT 100
 
 // board[rank][file],
 // A file is 0, 1st rank is 0
