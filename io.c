@@ -56,6 +56,8 @@ void _pms_helper(int i, Move m) {
 
 // Print a move in standard algebraic notation
 void print_move_san(Board *b, Move *m) {
+	char check_checkmate = 0;
+	
 	_pms_board = b;
 	_pms_moved = b->board[m->soure_rank][m->soure_file].type;
 	_pms_move = *m;
@@ -66,39 +68,40 @@ void print_move_san(Board *b, Move *m) {
 	
 	if (_pms_moved == King && m->soure_file == 4 && m->destination_file == 6) {
 		puts("O-O");
-		goto check_checkmate;
+		check_checkmate = 1;
 	}
 	if (_pms_moved == King && m->soure_file == 4 && m->destination_file == 2) {
 		puts("O-O-O");
-		goto check_checkmate;
-	}
-
-	PutChar("\0\0NBRQK"[_pms_moved]);
-	
-	for_each_legal(b,_pms_helper);
-	
-	if (_pms_type_rank_match && _pms_type_file_match) {
-		PutChar(_pms_move.soure_file+'a');
-		PutChar(_pms_move.soure_rank+'1');
-	} else if (_pms_type_file_match) {
-		PutChar(_pms_move.soure_rank+'1');
-	} else if (_pms_type_dest_match || (_pms_moved == Pawn && b->board[m->destination_rank][m->destination_file].type != None)) {
-		PutChar(_pms_move.soure_file+'a');
+		check_checkmate = 1;
 	}
 	
-	if (b->board[m->destination_rank][m->destination_file].type != None) {
-		PutChar('x');
+	if(!check_checkmate) {
+		PutChar("\0\0NBRQK"[_pms_moved]);
+	
+		for_each_legal(b,_pms_helper);
+		
+		if (_pms_type_rank_match && _pms_type_file_match) {
+			PutChar(_pms_move.soure_file+'a');
+			PutChar(_pms_move.soure_rank+'1');
+		} else if (_pms_type_file_match) {
+			PutChar(_pms_move.soure_rank+'1');
+		} else if (_pms_type_dest_match || (_pms_moved == Pawn && b->board[m->destination_rank][m->destination_file].type != None)) {
+			PutChar(_pms_move.soure_file+'a');
+		}
+		
+		if (b->board[m->destination_rank][m->destination_file].type != None) {
+			PutChar('x');
+		}
+		
+		PutChar(m->destination_file+'a');
+		PutChar(m->destination_rank+'1');
+		
+		if (m->promotion != None) {
+			PutChar('=');
+			PutChar(" PNBRQK"[m->promotion]);
+		}
 	}
 	
-	PutChar(m->destination_file+'a');
-	PutChar(m->destination_rank+'1');
-	
-	if (m->promotion != None) {
-		PutChar('=');
-		PutChar(" PNBRQK"[m->promotion]);
-	}
-	
-	check_checkmate:
 	make_move(b,m);
 	
 	if (is_check(b, b->current_turn)) {

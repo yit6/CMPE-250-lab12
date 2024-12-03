@@ -134,7 +134,21 @@ void play_game(void) {
 			print_move_san(&b, &m);
 			puts("\r\n");
 			make_move(&b, &m);
-			goto game_end_check;
+			
+			mateState = get_mate_state(&b);
+			if(mateState == 1) {
+				puts("White wins!\r\n");
+				rainbowCycle = 1;
+			} else if(mateState == 2) {
+				puts("Black wins!\r\n");
+				rainbowCycle = 1;
+			} else if(mateState == 3) {
+				rgb = 0x33FF00;
+				set_RGB(rgb);
+				puts("Stalemate\r\n");
+			}
+		
+			continue;
 		}
 		
 		gets(buffer);
@@ -199,20 +213,6 @@ void play_game(void) {
 		puts("\r\n");
 
 		make_move(&b, &m);
-		
-		game_end_check:
-		mateState = get_mate_state(&b);
-		if(mateState == 1) {
-			puts("White wins!\r\n");
-			rainbowCycle = 1;
-		} else if(mateState == 2) {
-			puts("Black wins!\r\n");
-			rainbowCycle = 1;
-		} else if(mateState == 3) {
-			rgb = 0x33FF00;
-			set_RGB(rgb);
-			puts("Stalemate\r\n");
-		}
 	}
 	print_board(&b);
 	
