@@ -39,6 +39,7 @@ void _perft_helper(int i, Move m) {
 	_perft_depth++;
 }
 
+// Print how many positions are reached on a gametree search of a certain depth on board b
 unsigned long long perft(Board *b, int depth) {
 	_perft_num = 0;
 	_perft_subtotal = 0;

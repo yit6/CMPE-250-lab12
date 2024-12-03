@@ -4,6 +4,7 @@
 char gameoverStatus;
 extern char pgn_valid;
 
+// Set a board to the starting position
 void new_board(Board *b) {
 	int i;
 	
@@ -78,6 +79,7 @@ void new_board(Board *b) {
 	b->pst_eval = 0;
 }
 
+// Load a fen into a board
 void from_fen(Board *b, char *fen) {
 	
 	char rank=7, file=0;
@@ -237,7 +239,7 @@ char is_attacked(Board *b, Color color, char rank, char file) {
 	return 0;
 }
 
-//checks if either king into check, returns 0 for no check, 1 for white check, 2 for black check, 3 for both
+// Get whether King of color c is currently in check
 char is_check(Board *b, Color c) {
 	char rank,file;
 	
@@ -256,7 +258,7 @@ char is_check(Board *b, Color c) {
 	return 0;
 }
 
-// 0 for illegal, 1 for legal
+// Check whether a move is legal
 char is_legal(Board *b, Move *m) {
 	char check;
 	char sliding = 1;
@@ -397,6 +399,7 @@ char is_legal(Board *b, Move *m) {
 	return check == 0;
 }
 
+// Perform move m on board b
 void make_move(Board *b, Move *m) {
 	struct game_history hist;
 	
@@ -508,6 +511,7 @@ void make_move(Board *b, Move *m) {
 	b->board[m->soure_rank][m->soure_file].type = None;
 }
 
+// Undo the most recent move
 void make_unmove(Board *b) {
 	struct game_history hist;
 	Move m;
@@ -561,6 +565,7 @@ void make_unmove(Board *b) {
 	}
 }
 
+// Run f on each legal move on the board b
 void for_each_legal(Board *b, void f(int i, Move m)) {
 	signed char sf,sr,df,dr,i=0;
 	Move m;
@@ -751,6 +756,7 @@ void _random_move_helper(int i, Move m) {
 	}
 }
 
+// Get a random legal move from board b
 Move random_move(Board *b) {
 	for_each_legal(b, _random_move_helper);
 	return _random_move;
@@ -760,14 +766,14 @@ void _gameover_helper(int i, Move m) {
 	gameoverStatus = 0;
 }
 
-//returns 0 if not in checkmate, 1 if yes in checkmate
+// Check if there are any legal moves in the position
 char is_gameover(Board *b) {
 	gameoverStatus = 1;
 	for_each_legal(b, _gameover_helper);
 	return gameoverStatus;
 }
 
-//returns 0 for normal play, 1 for white checkmate, 2 for black checkmate, 3 for stalemate
+// Returns 0 for normal play, 1 for white checkmate, 2 for black checkmate, 3 for stalemate
 char get_mate_state(Board *b) {
 	if(!is_gameover(b)) {
 		return 0;

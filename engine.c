@@ -74,6 +74,7 @@ const short piece_square[7][8][8] =
 	20 K, 30 K, 10 K,  0 K,  0 K, 10 K, 30 K, 20 K
 };
 
+// Return the pst evaluation of a board
 short evaluate(Board *b) {
 	int i;
 	int j;
@@ -129,6 +130,7 @@ void _move_counter(int i, Move m) {
 	num_moves = i+1;
 }
 
+// Get what the engine believe to be the best move
 Move best_move(Board *board) {
 	engine_board = board;
 	num_moves = 0;
@@ -214,6 +216,7 @@ void _minimax(void) {
 	minimax_depth++;
 }
 
+// Minimax eval of depth depth on board b
 short minimax(Board *b, char depth) {
 	engine_board = b;
 	minimax_depth = depth;

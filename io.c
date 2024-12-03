@@ -54,6 +54,7 @@ void _pms_helper(int i, Move m) {
 	}
 }
 
+// Print a move in standard algebraic notation
 void print_move_san(Board *b, Move *m) {
 	_pms_board = b;
 	_pms_moved = b->board[m->soure_rank][m->soure_file].type;
@@ -107,6 +108,7 @@ void print_move_san(Board *b, Move *m) {
 	make_unmove(b);
 }
 
+// Pretty print the board
 void print_board(Board *b) {
 	
 	int rank,file;
@@ -133,6 +135,7 @@ void print_board(Board *b) {
 	puts(" to move\r\n");
 }
 
+// Print the fen string of the board
 void print_fen(Board *b) {
 	signed char rank, file, empty_count = 0;
 	for (rank = 7; rank >= 0; rank--) {
@@ -179,6 +182,7 @@ void print_fen(Board *b) {
 	PutNumU(b->ply>>2);
 }
 
+// Print a pgn file of the game history stored in the board
 void print_pgn(Board *b) {
 	int i, j;
 	Move moves[HIST_AMT];

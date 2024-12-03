@@ -17,22 +17,35 @@
 
 #define gets(buf) GetStringSB(buf, 72)
 
+// Chess board, only one
 Board b;
+
+// Buffer for uart
 char buffer[72];
+
+// Scratch variable to store a move
 Move m;
+
+// Result of a perft computation
 unsigned long long perft_num;
 
 unsigned int seed = 1;
+
 extern char rainbowCycle;
 
+// Keeps track of which colors are played by an engine
 char player_status;
+
+// Keeps track of if the pgn export will still work
 char pgn_valid;
 
+// Generate pseudo-random integer
 unsigned int random() {
 	seed = seed * 33456789 + 2345600078l;
 	return seed;
 }
 
+// Game loop with debug commands
 void debug_game(void) {
 	char mateState = 0;
 	UInt32 rgb;
@@ -105,6 +118,7 @@ void debug_game(void) {
 	print_board(&b);
 }
 
+// Main game loop
 void play_game(void) {
 	char mateState = 0;
 	UInt32 rgb;
@@ -140,6 +154,7 @@ void play_game(void) {
 			"Quit game:         Q\r\n"
 			"Help:              H\r\n"
 			);
+			continue;
 		}
 		if (*buffer == 'U') { //modify for takebacks
 			make_unmove(&b);
@@ -160,6 +175,10 @@ void play_game(void) {
 			continue;
 		}
 		if (*buffer == 'P') {
+			if (!pgn_valid) {
+				puts("Current game state will corrupt on PGN export, not doing it\r\n");
+				continue;
+			}
 			print_pgn(&b);
 			continue;
 		}
